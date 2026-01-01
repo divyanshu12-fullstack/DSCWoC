@@ -1,0 +1,152 @@
+/* Mobile Optimized Benefits Cards */
+
+.mobile-benefits-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+}
+
+/* Animated background gradient on hover */
+.mobile-benefits-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(100, 200, 255, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.mobile-benefits-card:active::before {
+  opacity: 1;
+}
+
+/* Icon container - Large and prominent on mobile */
+.mobile-benefits-icon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 4px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Title */
+.mobile-benefits-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.3;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Description text - Concise for mobile */
+.mobile-benefits-description {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+  flex-grow: 1;
+}
+
+/* Bottom accent line */
+.mobile-benefits-accent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color, #64c8ff) 0%, transparent 100%);
+  opacity: 0.6;
+}
+
+/* Touch feedback */
+.mobile-benefits-card:active {
+  transform: scale(0.98);
+  border-color: rgba(100, 200, 255, 0.6);
+}
+
+/* Grid layout for mobile */
+.mobile-benefits-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Two column layout on small tablets (≥360px) */
+@media (min-width: 360px) {
+  .mobile-benefits-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .mobile-benefits-card {
+    padding: 14px;
+    min-height: 180px;
+  }
+
+  .mobile-benefits-icon {
+    font-size: 40px;
+  }
+
+  .mobile-benefits-title {
+    font-size: 14px;
+  }
+
+  .mobile-benefits-description {
+    font-size: 12px;
+  }
+}
+
+/* Better spacing on sm devices (≥640px) */
+@media (min-width: 640px) {
+  .mobile-benefits-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .mobile-benefits-card {
+    padding: 18px;
+    min-height: 200px;
+  }
+
+  .mobile-benefits-icon {
+    font-size: 44px;
+  }
+
+  .mobile-benefits-title {
+    font-size: 15px;
+  }
+
+  .mobile-benefits-description {
+    font-size: 13px;
+  }
+}
+
+/* Hide on desktop (≥768px where GSAP version takes over) */
+@media (min-width: 768px) {
+  .mobile-benefits-container {
+    display: none;
+  }
+}
