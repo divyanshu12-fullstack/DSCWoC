@@ -144,40 +144,37 @@ const AboutSection = () => {
       <div className="md:hidden max-w-3xl mx-auto mb-16 px-3">
         <div className="text-center mb-4">
           <h2 className="text-3xl font-bold text-white mb-1">Mission Briefing</h2>
-          <p className="text-xs text-gray-400">HUD · Live mission insights</p>
+          <p className="text-xs text-cyan-300">Storm-ready intel · No fluff</p>
         </div>
 
-        <div className="w-full rounded-2xl border border-white/10 bg-slate-900/70 backdrop-blur-md p-3 shadow-lg shadow-cosmic-purple/10">
-          <div className="flex items-center gap-2 text-[11px] text-gray-300 mb-3">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            LIVE FLIGHT HUD
+        <div className="w-full rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-[#0a0f1c] via-[#0f172a] to-[#0b1323] p-5 shadow-xl shadow-cyan-500/20 space-y-5 relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 20% 20%, rgba(34,211,238,0.08), transparent 35%), radial-gradient(circle at 80% 0%, rgba(139,92,246,0.08), transparent 30%)' }}></div>
+          <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"></div>
+          <div className="relative flex items-start gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-lg shadow-inner shadow-black/40">🛰️</div>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.25em] text-cyan-300 font-semibold">Stormbrief</p>
+              <h3 className="text-lg font-semibold text-white leading-tight">Clear, tactical, launch-ready</h3>
+              <p className="text-sm text-slate-200 mt-1">4 weeks. 10 phases. Mentors on call. Support channel live. You focus on shipping.</p>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <div className="px-3 py-2 rounded-full bg-slate-800/70 border border-white/10 text-xs text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              Status: Active
-            </div>
-            <div className="px-3 py-2 rounded-full bg-slate-800/70 border border-white/10 text-xs text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
-              Uplink: Stable
-            </div>
-            <div className="px-3 py-2 rounded-full bg-slate-800/70 border border-white/10 text-xs text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-              Power: 98%
-            </div>
-            <div className="px-3 py-2 rounded-full bg-slate-800/70 border border-white/10 text-xs text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              GPS: Locked
-            </div>
-            <div className="px-3 py-2 rounded-full bg-slate-800/70 border border-white/10 text-xs text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-pink-400"></span>
-              Crew: Synced
-            </div>
-            <div className="px-3 py-2 rounded-full bg-slate-800/70 border border-white/10 text-xs text-white flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-violet-400"></span>
-              Next: Orbit Phase I
-            </div>
+          <div className="grid grid-cols-2 gap-3 relative">
+            {mobileInsights.map((insight) => (
+              <div
+                key={insight.label}
+                className={`p-3 rounded-xl bg-slate-900/80 border border-white/10 text-sm text-white shadow-lg shadow-cyan-500/15 relative overflow-hidden`}
+              >
+                <div className="absolute inset-0 opacity-40" style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(34,211,238,0.08))' }}></div>
+                <div className={`absolute left-0 top-0 h-full w-1 ${insight.accent}`}></div>
+                <p className="text-[11px] text-cyan-100/80 mb-1 relative">{insight.label}</p>
+                <p className="font-semibold relative">{insight.value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-xs text-slate-200 leading-relaxed relative">
+            Storm-check complete: join the mission, sync with mentors, and push your first PR before final orbit.
           </div>
         </div>
       </div>

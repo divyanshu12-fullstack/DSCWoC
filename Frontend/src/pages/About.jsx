@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import Navbar from '../components/Navbar'
 import Starfield from '../components/Starfield'
 
 const About = () => {
@@ -9,23 +10,10 @@ const About = () => {
       <Starfield />
       
       <div className="relative z-10">
-        {/* Header */}
-        <header className="bg-white/5 backdrop-blur-lg border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              <h1 className="text-2xl font-bold text-white">About DSC Winter of Code</h1>
-              <button
-                onClick={() => navigate('/')}
-                className="text-gray-400 hover:text-white transition-colors duration-200"
-              >
-                ← Back to Home
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Navbar />
+        
+        {/* Main Content with padding for navbar */}
+        <main className="pt-20 sm:pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Introduction Section */}
           <section className="mb-8">
             <br />

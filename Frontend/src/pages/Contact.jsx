@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSubmitContact } from '../hooks/useApi'
+import Navbar from '../components/Navbar'
 import Starfield from '../components/Starfield'
 
 const Contact = () => {
@@ -38,23 +39,10 @@ const Contact = () => {
       <Starfield />
       
       <div className="relative z-10">
-        {/* Header */}
-        <header className="bg-white/5 backdrop-blur-lg border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              <h1 className="text-2xl font-bold text-white">Contact Us</h1>
-              <button
-                onClick={() => navigate('/')}
-                className="text-gray-400 hover:text-white transition-colors duration-200"
-              >
-                ← Back to Home
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Navbar />
+        
+        {/* Main Content with padding for navbar */}
+        <main className="pt-20 sm:pt-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Info */}
             <div>
@@ -75,7 +63,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="text-white font-medium">Email</h3>
-                    <p className="text-gray-300">dscwoc@example.com</p>
+                    <p className="text-gray-300">dsc.vitb@vitbhopal.ac.in</p>
                   </div>
                 </div>
 
@@ -87,7 +75,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="text-white font-medium">GitHub</h3>
-                    <p className="text-gray-300">@dsc-community</p>
+                    <a href="https://github.com/cdsvitbhopal" target="_blank" rel="noopener noreferrer" className="text-stellar-cyan hover:underline">cdsvitbhopal</a>
                   </div>
                 </div>
 

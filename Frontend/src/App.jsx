@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import AboutSection from './components/AboutSection';
 import BenefitsSection from './components/BenefitsSection';
@@ -19,6 +19,7 @@ import Contact from './pages/Contact';
 import FAQ from './pages/FAQ';
 import About from './pages/About';
 import Rewards from './pages/Rewards';
+import Projects from './pages/Projects';
 
 // Loading fallback component
 const AnimationFallback = () => (
@@ -52,9 +53,21 @@ const Home = () => (
   </div>
 );
 
+// ScrollToTop component to handle scroll on route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -63,6 +76,7 @@ function App() {
         <Route path="/admin" element={<Dashboard />} />
         <Route path="/mentor/dashboard" element={<Dashboard />} />
         <Route path="/about" element={<About />} />
+        <Route path="/projects" element={<Projects />} />
         <Route path="/rewards" element={<Rewards />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQ />} />

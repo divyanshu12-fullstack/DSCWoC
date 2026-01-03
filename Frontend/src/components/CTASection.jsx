@@ -13,7 +13,9 @@ const CTASection = () => {
             <p className="text-2xl text-gray-300 terminal-text">
               YOUR MISSION BEGINS THIS WINTER.
             </p>
-            <button className="bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-galaxy-violet hover:to-nebula-pink text-white px-12 py-4 rounded-full text-xl font-bold transition-all duration-300 hover:shadow-2xl hover:shadow-cosmic-purple/60 hover:-translate-y-2 inline-flex items-center gap-3 cosmic-glow retro-button">
+            <button 
+              onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog', '_blank')}
+              className="bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-galaxy-violet hover:to-nebula-pink text-white px-12 py-4 rounded-full text-xl font-bold transition-all duration-300 hover:shadow-2xl hover:shadow-cosmic-purple/60 hover:-translate-y-2 inline-flex items-center gap-3 cosmic-glow retro-button">
               <span>🚀</span>
               JOIN THE MISSION
             </button>

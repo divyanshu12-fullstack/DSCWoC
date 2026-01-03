@@ -3,13 +3,19 @@ import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [shrinkProgress, setShrinkProgress] = useState(0); // 0 -> not scrolled, 1 -> fully shrunk
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      const y = window.scrollY;
+      const start = 10; // when shrinking starts
+      const end = 150; // when fully shrunk (reduced from 220)
+      const prog = Math.min(1, Math.max(0, (y - start) / (end - start)));
+      setShrinkProgress(prog);
+      setScrolled(y > start);
     };
 
     // Check if user is logged in
@@ -26,8 +32,7 @@ const Navbar = () => {
     { name: 'Home', href: '#home' },
     { name: 'About', href: '/about', isRoute: true },
     { name: 'Timeline', href: '#timeline' },
-    { name: 'Tracks', href: '#tracks' },
-    { name: 'Projects', href: '#projects' },
+    { name: 'Projects', href: '/projects', isRoute: true },
     { name: 'Rewards', href: '/rewards', isRoute: true },
     { name: 'FAQ', href: '/faq', isRoute: true },
     { name: 'Contact', href: '/contact', isRoute: true }
@@ -37,10 +42,21 @@ const Navbar = () => {
     if (item.isRoute) {
       navigate(item.href);
     } else {
-      // Smooth scroll to section
+      // For hash links, check if element exists on current page
       const element = document.querySelector(item.href);
       if (element) {
+        // Element exists on current page, scroll to it
         element.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Element doesn't exist on current page (e.g., scrolling to #timeline from /about)
+        // Navigate to home first, then scroll
+        navigate('/');
+        setTimeout(() => {
+          const targetElement = document.querySelector(item.href);
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100); // Small delay to ensure page loads
       }
     }
     setMobileMenuOpen(false);
@@ -86,21 +102,23 @@ const Navbar = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between">
-        {/* Logo */}
-        <div 
-          className={`flex items-center space-x-2 cursor-pointer transition-all duration-300 ${
-            scrolled 
-              ? 'w-12 h-12 sm:w-16 sm:h-16' 
-              : 'w-24 h-24 sm:w-40 sm:h-40'
-          }`}
-          onClick={() => navigate('/')}
-        >
-          <img 
-            src="/clubLogo.png" 
-            alt="DSC Club Logo" 
-            className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
-          />
-          <span className="text-lg sm:text-xl font-bold text-white">DSC WoC</span>
+        {/* Logo - Responsive sizing with Tailwind */}
+        <div className="relative flex items-center">
+          {/* Base logo container - scales with Tailwind */}
+          <div
+            className="flex items-center cursor-pointer transition-all duration-300"
+            onClick={() => navigate('/')}
+            style={{
+              transform: `scale(${1 - 0.08 * shrinkProgress})`, // Barely shrinks to 92% on scroll
+              transformOrigin: 'left center'
+            }}
+          >
+            <img
+              src="/dscwoc-navbar-logo.png"
+              alt="DSCWOC Logo"
+              className="object-contain transition-all duration-300 w-20 sm:w-24 md:w-28 lg:w-32"
+            />
+          </div>
         </div>
 
         {/* Mobile Menu Button */}

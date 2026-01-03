@@ -6,9 +6,8 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <img src="/clubLogo.png" alt="DSC" className="w-8 h-8" />
-              <span className="text-xl font-bold text-white">DSC Winter of Code</span>
+            <div className="flex items-center space-x-3 mb-4">
+              <img src="/dscwoc-navbar-logo.png" alt="DSCWOC" className="w-20 h-auto sm:w-28" />
             </div>
             <p className="text-gray-400 text-sm">
               Empowering students through open-source contributions and mentorship.

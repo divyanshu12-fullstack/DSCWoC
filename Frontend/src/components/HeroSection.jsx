@@ -21,11 +21,15 @@ const HeroSection = () => {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
-            <button className="retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-galaxy-violet hover:to-nebula-pink text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/50 hover:-translate-y-1 flex items-center justify-center gap-2 cosmic-glow">
+            <button 
+              onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog', '_blank')}
+              className="retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-galaxy-violet hover:to-nebula-pink text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/50 hover:-translate-y-1 flex items-center justify-center gap-2 cosmic-glow">
               <span>🚀</span>
               JOIN THE MISSION
             </button>
-            <button className="retro-button border-2 border-cosmic-purple text-cosmic-purple hover:bg-cosmic-purple/20 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cosmic-purple/30">
+            <button 
+              onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog', '_blank')}
+              className="retro-button border-2 border-cosmic-purple text-cosmic-purple hover:bg-cosmic-purple/20 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cosmic-purple/30">
               <span>🛰️</span>
               BECOME A MENTOR
             </button>
