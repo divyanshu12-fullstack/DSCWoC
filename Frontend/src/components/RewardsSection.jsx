@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -98,6 +98,7 @@ if (typeof window !== 'undefined') {
 
 const RewardsSection = () => {
   const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
   const sectionRef = useRef(null);
   const titleRef = useRef(null);
   const prizePoolRef = useRef(null);
@@ -159,8 +160,13 @@ const RewardsSection = () => {
   ];
 
   useEffect(() => {
+    // Set mounted state to prevent hydration mismatch
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     // Desktop animations only
-    if (isMobile) return;
+    if (isMobile || !mounted) return;
 
     // Set initial states for all animated elements
     if (titleRef.current) {
@@ -272,7 +278,7 @@ const RewardsSection = () => {
       // Also kill all GSAP animations
       gsap.killTweensOf('*');
     };
-  }, [isMobile]);
+  }, [isMobile, mounted]);
 
   return (
     <section 
@@ -300,8 +306,7 @@ const RewardsSection = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* MOBILE VIEW */}
-        {isMobile ? (
+        {!mounted ? null : isMobile ? (
           <>
             {/* Mobile Header */}
             <div className="text-center mb-12">
@@ -319,7 +324,7 @@ const RewardsSection = () => {
             </div>
 
             {/* Mobile Prize Pool */}
-            <div className="relative bg-gradient-to-r from-indigo-900/40 via-purple-900/40 to-pink-900/40 border-2 border-purple-500/50 rounded-lg p-4 text-center mb-8 backdrop-blur-sm">
+            <div className="relative bg-gradient-to-r from-indigo-900/70 via-purple-900/70 to-pink-900/70 border-2 border-purple-400/80 rounded-lg p-4 text-center mb-8 backdrop-blur-sm">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Orbit className="w-5 h-5 text-yellow-400 animate-spin" style={{ animationDuration: '20s' }} />
                 <h3 className="text-lg font-bold text-white">Prize Pool</h3>
@@ -356,10 +361,10 @@ const RewardsSection = () => {
                     key={index}
                     className={`rounded-lg p-4 backdrop-blur-sm border transition-all ${
                       tier.isGold
-                        ? 'bg-yellow-900/30 border-yellow-400/50'
+                        ? 'bg-yellow-900/60 border-yellow-400/80'
                         : tier.isSilver
-                        ? 'bg-slate-800/30 border-slate-400/50'
-                        : 'bg-orange-900/30 border-orange-400/50'
+                        ? 'bg-slate-800/60 border-slate-400/80'
+                        : 'bg-orange-900/60 border-orange-400/80'
                     }`}
                   >
                     {/* Tier header */}
