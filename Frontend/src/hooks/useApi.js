@@ -1,6 +1,10 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// Single source of truth for backend API base
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1` : '') ||
+  'http://localhost:5000/api/v1';
 
 /**
  * Fetch leaderboard data with caching
@@ -114,8 +118,7 @@ export const useBadges = () => {
 export const useSubmitContact = () => {
   return useMutation({
     mutationFn: async (formData) => {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/v1/contact`, {
+      const response = await fetch(`${API_BASE_URL}/contact/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -169,20 +169,9 @@ export const requireAdmin = async (req, res, next) => {
       });
     }
 
-    // Testing phase: Only allow specific GitHub usernames
-    const ALLOWED_ADMIN_USERNAMES = ['AdmGenSameer', 'samstark1'];
-    
-    if (!ALLOWED_ADMIN_USERNAMES.includes(req.user.username)) {
-      logger.warn(`Unauthorized admin access attempt by user: ${req.user.username}`);
-      return res.status(HTTP_STATUS.FORBIDDEN).json({
-        status: 'error',
-        message: 'Access denied. Admin privileges required.',
-      });
-    }
-
-    // Check if user has Admin role
+    // Dev mode: allow any user with Admin role (whitelist removed for development)
     if (req.user.role !== 'Admin') {
-      logger.warn(`User ${req.user.username} has correct username but not Admin role`);
+      logger.warn(`User ${req.user.username} is not Admin`);
       return res.status(HTTP_STATUS.FORBIDDEN).json({
         status: 'error',
         message: 'Access denied. Admin privileges required.',

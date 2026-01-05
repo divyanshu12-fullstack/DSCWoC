@@ -1,6 +1,6 @@
 import Contact from '../models/Contact.model.js';
 import logger from '../utils/logger.js';
-import { sendSuccess, sendError } from '../utils/response.js';
+import { successResponse, errorResponse } from '../utils/response.js';
 
 /**
  * Submit a contact form message
@@ -12,13 +12,13 @@ export const submitContact = async (req, res) => {
 
     // Validate required fields
     if (!name || !email || !message) {
-      return sendError(res, 'Name, email, and message are required', 400);
+      return errorResponse(res, 'Name, email, and message are required', 400);
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return sendError(res, 'Please provide a valid email address', 400);
+      return errorResponse(res, 'Please provide a valid email address', 400);
     }
 
     // Create new contact message
@@ -33,13 +33,13 @@ export const submitContact = async (req, res) => {
 
     logger.info(`Contact message submitted by ${email}: "${message.substring(0, 50)}..."`);
 
-    sendSuccess(res, {
+    successResponse(res, {
       message: 'Your message has been sent successfully!',
       contactId: contact._id
     }, 'Contact message submitted successfully', 201);
   } catch (error) {
     logger.error(`Error submitting contact: ${error.message}`);
-    sendError(res, 'Failed to submit contact message', 500);
+    errorResponse(res, 'Failed to submit contact message', 500);
   }
 };
 
@@ -73,7 +73,7 @@ export const getAllContacts = async (req, res) => {
 
     const total = await Contact.countDocuments(filter);
 
-    sendSuccess(res, {
+    successResponse(res, {
       contacts,
       pagination: {
         total,
@@ -84,7 +84,7 @@ export const getAllContacts = async (req, res) => {
     }, 'Contacts retrieved successfully');
   } catch (error) {
     logger.error(`Error fetching contacts: ${error.message}`);
-    sendError(res, 'Failed to fetch contacts', 500);
+    errorResponse(res, 'Failed to fetch contacts', 500);
   }
 };
 
@@ -98,7 +98,7 @@ export const updateContactStatus = async (req, res) => {
     const { status, adminNotes } = req.body;
 
     if (!status || !['New', 'Read', 'Responded'].includes(status)) {
-      return sendError(res, 'Valid status required (New, Read, or Responded)', 400);
+      return errorResponse(res, 'Valid status required (New, Read, or Responded)', 400);
     }
 
     const updateData = {
@@ -118,15 +118,15 @@ export const updateContactStatus = async (req, res) => {
     ).populate('respondedBy', 'username fullName');
 
     if (!contact) {
-      return sendError(res, 'Contact message not found', 404);
+      return errorResponse(res, 'Contact message not found', 404);
     }
 
     logger.info(`Contact ${id} status updated to ${status} by ${req.user.username}`);
 
-    sendSuccess(res, contact, 'Contact status updated successfully');
+    successResponse(res, contact, 'Contact status updated successfully');
   } catch (error) {
     logger.error(`Error updating contact status: ${error.message}`);
-    sendError(res, 'Failed to update contact status', 500);
+    errorResponse(res, 'Failed to update contact status', 500);
   }
 };
 
@@ -141,15 +141,15 @@ export const deleteContact = async (req, res) => {
     const contact = await Contact.findByIdAndDelete(id);
 
     if (!contact) {
-      return sendError(res, 'Contact message not found', 404);
+      return errorResponse(res, 'Contact message not found', 404);
     }
 
     logger.info(`Contact ${id} deleted by ${req.user.username}`);
 
-    sendSuccess(res, null, 'Contact deleted successfully');
+    successResponse(res, null, 'Contact deleted successfully');
   } catch (error) {
     logger.error(`Error deleting contact: ${error.message}`);
-    sendError(res, 'Failed to delete contact', 500);
+    errorResponse(res, 'Failed to delete contact', 500);
   }
 };
 
@@ -179,10 +179,10 @@ export const getContactStats = async (req, res) => {
 
     const result = stats[0] || { total: 0, new: 0, read: 0, responded: 0 };
 
-    sendSuccess(res, result, 'Contact stats retrieved successfully');
+    successResponse(res, result, 'Contact stats retrieved successfully');
   } catch (error) {
     logger.error(`Error fetching contact stats: ${error.message}`);
-    sendError(res, 'Failed to fetch contact stats', 500);
+    errorResponse(res, 'Failed to fetch contact stats', 500);
   }
 };
 
@@ -191,5 +191,4 @@ export const getContactStats = async (req, res) => {
  */
 export const submitContactForm = async (req, res) => {
   return submitContact(req, res);
-  }, 'Thank you for your message! We will get back to you soon.');
-});
+};

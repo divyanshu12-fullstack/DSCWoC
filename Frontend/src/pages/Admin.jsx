@@ -14,7 +14,12 @@ import {
   Mail
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL?.replace(/\/?$/, '') + '/api/v1' ||
+  'http://localhost:5000/api/v1';
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'sameers0324@gmail.com';
+const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS; // set in Frontend .env
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -26,6 +31,27 @@ const Admin = () => {
   const [prs, setPrs] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [error, setError] = useState(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [creds, setCreds] = useState({ email: '', password: '' });
+  const [gateError, setGateError] = useState('');
+
+  const handleGateSubmit = (e) => {
+    e.preventDefault();
+    if (creds.email.trim().toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      setGateError('Invalid email');
+      return;
+    }
+    if (!ADMIN_PASS) {
+      setGateError('Admin password is not configured');
+      return;
+    }
+    if (creds.password !== ADMIN_PASS) {
+      setGateError('Invalid password');
+      return;
+    }
+    setGateError('');
+    setIsAuthorized(true);
+  };
 
   // Get auth token
   const getAuthToken = () => {
@@ -138,16 +164,72 @@ const Admin = () => {
       await fetchOverview();
       setLoading(false);
     };
-    loadData();
-  }, []);
+    if (isAuthorized) {
+      loadData();
+    }
+  }, [isAuthorized]);
 
   // Load data based on active tab
   useEffect(() => {
+    if (!isAuthorized) return;
     if (activeTab === 'users' && users.length === 0) fetchUsers();
     if (activeTab === 'projects' && projects.length === 0) fetchProjects();
     if (activeTab === 'prs' && prs.length === 0) fetchPRs();
     if (activeTab === 'contacts' && contacts.length === 0) fetchContacts();
-  }, [activeTab]);
+  }, [activeTab, isAuthorized]);
+
+  // Gate screen
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-[#0f162c] to-slate-950 flex items-center justify-center px-4">
+        <Starfield />
+        <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl">
+          <div className="flex items-center gap-3 mb-4">
+            <Mail className="w-6 h-6 text-cosmic-purple" />
+            <div>
+              <p className="text-sm text-gray-400">Restricted Access</p>
+              <h1 className="text-xl font-semibold text-white">Admin Authentication</h1>
+            </div>
+          </div>
+          <form onSubmit={handleGateSubmit} className="space-y-4">
+            <div>
+              <label className="text-gray-300 text-sm mb-1 block">Email</label>
+              <input
+                type="email"
+                value={creds.email}
+                onChange={(e) => setCreds({ ...creds, email: e.target.value })}
+                className="w-full bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cosmic-purple"
+                placeholder="admin email"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-gray-300 text-sm mb-1 block">Password</label>
+              <input
+                type="password"
+                value={creds.password}
+                onChange={(e) => setCreds({ ...creds, password: e.target.value })}
+                className="w-full bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cosmic-purple"
+                placeholder="admin password"
+                required
+              />
+            </div>
+            {gateError && (
+              <div className="text-red-300 text-sm bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">
+                {gateError}
+              </div>
+            )}
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-cosmic-purple to-nebula-pink text-white font-medium py-2.5 rounded-lg hover:from-cosmic-purple/90 hover:to-nebula-pink/90 transition"
+            >
+              Enter Mission Control
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -192,6 +274,7 @@ const Admin = () => {
               { id: 'users', label: 'Users', icon: Users },
               { id: 'projects', label: 'Projects', icon: FolderGit2 },
               { id: 'prs', label: 'Pull Requests', icon: GitPullRequest },
+              { id: 'contacts', label: 'Contacts', icon: Mail },
             ].map((tab) => (
               <button
                 key={tab.id}
