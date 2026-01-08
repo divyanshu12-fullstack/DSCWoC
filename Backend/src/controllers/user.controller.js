@@ -181,6 +181,7 @@ export const getLeaderboard = asyncHandler(async (req, res) => {
 
   let users;
   let total;
+  let summary;
 
   try {
     if (filter === 'weekly') {
@@ -236,6 +237,25 @@ export const getLeaderboard = asyncHandler(async (req, res) => {
         { $count: 'total' }
       ]);
       total = totalResult[0]?.total || 0;
+
+      // Weekly summary (best-effort): totals for last 7 days
+      const weeklySummaryAgg = await PullRequest.aggregate([
+        { $match: { 'github_data.created_at': { $gte: weekAgo } } },
+        {
+          $group: {
+            _id: null,
+            totalPoints: { $sum: '$points' },
+            totalPRs: { $sum: 1 },
+          },
+        },
+      ]);
+      summary = {
+        contributors: total,
+        totalPoints: weeklySummaryAgg[0]?.totalPoints || 0,
+        totalPRs: weeklySummaryAgg[0]?.totalPRs || 0,
+        generatedAt: new Date().toISOString(),
+        filter,
+      };
     } else {
       // Overall leaderboard - returns all-time rankings
       // Sorted by points (primary) and total PRs (secondary)
@@ -253,9 +273,59 @@ export const getLeaderboard = asyncHandler(async (req, res) => {
         ...user.toObject(),
         rank: skip + index + 1
       }));
+
+      // Overall summary
+      const overallSummaryAgg = await User.aggregate([
+        { $match: { isActive: true } },
+        {
+          $group: {
+            _id: null,
+            totalPoints: { $sum: '$stats.points' },
+            totalMergedPRs: { $sum: '$stats.mergedPRs' },
+          },
+        },
+      ]);
+      summary = {
+        contributors: total,
+        totalPoints: overallSummaryAgg[0]?.totalPoints || 0,
+        totalMergedPRs: overallSummaryAgg[0]?.totalMergedPRs || 0,
+        generatedAt: new Date().toISOString(),
+        filter,
+      };
     }
 
-    paginatedResponse(res, users, page, limit, total, 'Leaderboard retrieved successfully');
+    // Add per-user projects count for the current page (distinct projects from PRs)
+    const userIds = users.map(u => u?._id).filter(Boolean);
+    if (userIds.length > 0) {
+      const projectsAgg = await PullRequest.aggregate([
+        { $match: { user: { $in: userIds } } },
+        { $group: { _id: '$user', projects: { $addToSet: '$project' } } },
+        { $project: { projectsCount: { $size: '$projects' } } },
+      ]);
+
+      const projectsMap = new Map(projectsAgg.map(p => [p._id.toString(), p.projectsCount]));
+      users = users.map(u => ({
+        ...u,
+        projectsCount: projectsMap.get(u._id.toString()) || 0,
+      }));
+    }
+
+    // Custom response to include summary
+    const totalPages = Math.ceil(total / limit);
+    return res.status(HTTP_STATUS.OK).json({
+      status: 'success',
+      message: 'Leaderboard retrieved successfully',
+      data: users,
+      summary,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
   } catch (error) {
     // Log error with context for debugging
     console.error('Leaderboard fetch error in user.controller.js:', error);
