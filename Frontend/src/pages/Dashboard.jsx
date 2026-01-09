@@ -198,17 +198,26 @@ const Dashboard = () => {
           <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl p-6">
             <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="bg-stellar-cyan/20 hover:bg-stellar-cyan/30 text-stellar-cyan border border-stellar-cyan/30 rounded-lg p-4 text-left transition-colors duration-200">
+              <button 
+                onClick={() => navigate('/projects')}
+                className="bg-stellar-cyan/20 hover:bg-stellar-cyan/30 text-stellar-cyan border border-stellar-cyan/30 rounded-lg p-4 text-left transition-colors duration-200"
+              >
                 <h3 className="font-medium mb-2">Submit PR</h3>
                 <p className="text-sm opacity-80">Submit a new pull request for validation</p>
               </button>
               
-              <button className="bg-nebula-blue/20 hover:bg-nebula-blue/30 text-nebula-blue border border-nebula-blue/30 rounded-lg p-4 text-left transition-colors duration-200">
+              <button 
+                onClick={() => navigate('/projects')}
+                className="bg-nebula-blue/20 hover:bg-nebula-blue/30 text-nebula-blue border border-nebula-blue/30 rounded-lg p-4 text-left transition-colors duration-200"
+              >
                 <h3 className="font-medium mb-2">View Projects</h3>
                 <p className="text-sm opacity-80">Browse available projects to contribute</p>
               </button>
               
-              <button className="bg-cosmic-purple/20 hover:bg-cosmic-purple/30 text-cosmic-purple border border-cosmic-purple/30 rounded-lg p-4 text-left transition-colors duration-200">
+              <button 
+                onClick={() => navigate('/rewards')}
+                className="bg-cosmic-purple/20 hover:bg-cosmic-purple/30 text-cosmic-purple border border-cosmic-purple/30 rounded-lg p-4 text-left transition-colors duration-200"
+              >
                 <h3 className="font-medium mb-2">Leaderboard</h3>
                 <p className="text-sm opacity-80">Check your ranking among contributors</p>
               </button>

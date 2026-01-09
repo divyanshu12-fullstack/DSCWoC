@@ -1,23 +1,25 @@
 import express from 'express';
 import { authenticate, authorize } from '../middleware/auth.js';
-import { validate } from '../middleware/validate.js';
 import * as projectController from '../controllers/project.controller.js';
-// Import validation schemas when created
-// import { projectValidation } from '../validations/project.validation.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/', projectController.getProjects);
+// Static routes MUST come before dynamic :id routes
+router.get('/filters', projectController.getProjectFilters);
 router.get('/featured', projectController.getFeaturedProjects);
-router.get('/:id', projectController.getProject);
+router.get('/my-projects', authenticate, projectController.getMyProjects);
+
+// Public list route
+router.get('/', projectController.getProjects);
 
 // Protected routes - Mentor/Admin only
-router.post('/', authenticate, authorize('admin', 'mentor'), projectController.createProject);
-router.put('/:id', authenticate, authorize('admin', 'mentor'), projectController.updateProject);
-router.post('/:id/sync', authenticate, authorize('admin', 'mentor'), projectController.syncProject);
+router.post('/', authenticate, authorize('Mentor', 'Admin'), projectController.createProject);
 
-// Admin only
-router.delete('/:id', authenticate, authorize('admin'), projectController.deleteProject);
+// Dynamic :id routes come last
+router.get('/:id', projectController.getProject);
+router.put('/:id', authenticate, authorize('Mentor', 'Admin'), projectController.updateProject);
+router.post('/:id/sync', authenticate, authorize('Mentor', 'Admin'), projectController.syncProject);
+router.put('/:id/approve', authenticate, authorize('Admin'), projectController.approveProject);
+router.delete('/:id', authenticate, authorize('Admin'), projectController.deleteProject);
 
 export default router;

@@ -1,6 +1,12 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+
+// Helper to get auth headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('access_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 /**
  * Fetch leaderboard data with caching and filter support
@@ -20,25 +26,69 @@ export const useLeaderboard = (page = 1, limit = 10, filter = 'overall') => {
       if (!response.ok) throw new Error('Failed to fetch leaderboard');
       return response.json();
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (previously cacheTime)
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
 
 /**
- * Fetch all projects with caching
+ * Fetch all projects with caching and filters
  * Cache: 10 minutes
  */
-export const useProjects = () => {
+export const useProjects = (filters = {}) => {
+  const { page = 1, limit = 12, difficulty, tags, tech, search, sortBy, order } = filters;
+  
   return useQuery({
-    queryKey: ['projects'],
+    queryKey: ['projects', filters],
     queryFn: async () => {
-      const response = await fetch(`${API_BASE_URL}/projects`);
+      const params = new URLSearchParams();
+      if (page) params.append('page', page);
+      if (limit) params.append('limit', limit);
+      if (difficulty) params.append('difficulty', difficulty);
+      if (tags) params.append('tags', tags);
+      if (tech) params.append('tech', tech);
+      if (search) params.append('search', search);
+      if (sortBy) params.append('sortBy', sortBy);
+      if (order) params.append('order', order);
+
+      const response = await fetch(`${API_BASE_URL}/projects?${params}`);
       if (!response.ok) throw new Error('Failed to fetch projects');
       return response.json();
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 15 * 60 * 1000, // 15 minutes
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+};
+
+/**
+ * Fetch featured projects
+ */
+export const useFeaturedProjects = () => {
+  return useQuery({
+    queryKey: ['projects', 'featured'],
+    queryFn: async () => {
+      const response = await fetch(`${API_BASE_URL}/projects/featured`);
+      if (!response.ok) throw new Error('Failed to fetch featured projects');
+      return response.json();
+    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+};
+
+/**
+ * Fetch project filters (tags, tech stacks)
+ */
+export const useProjectFilters = () => {
+  return useQuery({
+    queryKey: ['projects', 'filters'],
+    queryFn: async () => {
+      const response = await fetch(`${API_BASE_URL}/projects/filters`);
+      if (!response.ok) throw new Error('Failed to fetch filters');
+      return response.json();
+    },
+    staleTime: 30 * 60 * 1000, // 30 min - filters don't change often
+    gcTime: 60 * 60 * 1000,
   });
 };
 
@@ -53,9 +103,107 @@ export const useProject = (projectId) => {
       if (!response.ok) throw new Error('Failed to fetch project');
       return response.json();
     },
-    enabled: !!projectId, // Don't fetch if projectId is not available
+    enabled: !!projectId,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+  });
+};
+
+/**
+ * Fetch current user's projects (for mentors)
+ */
+export const useMyProjects = () => {
+  return useQuery({
+    queryKey: ['projects', 'my-projects'],
+    queryFn: async () => {
+      const response = await fetch(`${API_BASE_URL}/projects/my-projects`, {
+        headers: getAuthHeaders(),
+      });
+      if (!response.ok) throw new Error('Failed to fetch your projects');
+      return response.json();
+    },
+    enabled: !!localStorage.getItem('access_token'), // Only fetch if logged in
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
+
+/**
+ * Create a new project
+ */
+export const useCreateProject = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (projectData) => {
+      const response = await fetch(`${API_BASE_URL}/projects`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify(projectData),
+      });
+      
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Failed to create project');
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+};
+
+/**
+ * Update a project
+ */
+export const useUpdateProject = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ projectId, data }) => {
+      const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify(data),
+      });
+      
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Failed to update project');
+      return result;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', variables.projectId] });
+    },
+  });
+};
+
+/**
+ * Sync project with GitHub
+ */
+export const useSyncProject = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (projectId) => {
+      const response = await fetch(`${API_BASE_URL}/projects/${projectId}/sync`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Failed to sync project');
+      return result;
+    },
+    onSuccess: (_, projectId) => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+    },
   });
 };
 
@@ -105,15 +253,13 @@ export const useBadges = () => {
       if (!response.ok) throw new Error('Failed to fetch badges');
       return response.json();
     },
-    staleTime: 15 * 60 * 1000, // Badges change infrequently
+    staleTime: 15 * 60 * 1000,
     gcTime: 20 * 60 * 1000,
   });
 };
 
 /**
  * Submit contact form
- * Usage: const submitContact = useSubmitContact();
- *        submitContact.mutate({ name, email, message });
  */
 export const useSubmitContact = () => {
   return useMutation({
@@ -127,11 +273,9 @@ export const useSubmitContact = () => {
       });
 
       const result = await response.json();
-
       if (result.status !== 'success') {
         throw new Error(result.message || 'Failed to send message');
       }
-
       return result;
     },
   });

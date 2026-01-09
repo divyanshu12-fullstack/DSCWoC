@@ -13,29 +13,41 @@ import logger from '../utils/logger.js';
 class GitHubService {
   constructor() {
     this.baseURL = 'https://api.github.com';
-    this.token = process.env.GITHUB_TOKEN;
+    this.client = null;
+  }
 
-    this.client = axios.create({
-      baseURL: this.baseURL,
-      headers: {
-        Authorization: `token ${this.token}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-      timeout: 10000,
-    });
-
-    // Add response interceptor for error handling
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        logger.error('GitHub API Error:', {
-          status: error.response?.status,
-          message: error.response?.data?.message,
-          url: error.config?.url,
-        });
-        throw error;
+  // Lazy initialization of the client to ensure env vars are loaded
+  getClient() {
+    if (!this.client || this.token !== process.env.GITHUB_TOKEN) {
+      this.token = process.env.GITHUB_TOKEN;
+      
+      if (!this.token) {
+        logger.warn('GITHUB_TOKEN not set in environment variables');
       }
-    );
+
+      this.client = axios.create({
+        baseURL: this.baseURL,
+        headers: {
+          Authorization: `token ${this.token}`,
+          Accept: 'application/vnd.github.v3+json',
+        },
+        timeout: 10000,
+      });
+
+      // Add response interceptor for error handling
+      this.client.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          logger.error('GitHub API Error:', {
+            status: error.response?.status,
+            message: error.response?.data?.message,
+            url: error.config?.url,
+          });
+          throw error;
+        }
+      );
+    }
+    return this.client;
   }
 
   /**
@@ -43,7 +55,7 @@ class GitHubService {
    */
   async getRepository(owner, repo) {
     try {
-      const response = await this.client.get(`/repos/${owner}/${repo}`);
+      const response = await this.getClient().get(`/repos/${owner}/${repo}`);
       return response.data;
     } catch (error) {
       logger.error(`Error fetching repository ${owner}/${repo}:`, error.message);
@@ -64,7 +76,7 @@ class GitHubService {
         page: options.page || 1,
       };
 
-      const response = await this.client.get(`/repos/${owner}/${repo}/pulls`, { params });
+      const response = await this.getClient().get(`/repos/${owner}/${repo}/pulls`, { params });
       return response.data;
     } catch (error) {
       logger.error(`Error fetching PRs for ${owner}/${repo}:`, error.message);
@@ -77,7 +89,7 @@ class GitHubService {
    */
   async getPullRequest(owner, repo, prNumber) {
     try {
-      const response = await this.client.get(`/repos/${owner}/${repo}/pulls/${prNumber}`);
+      const response = await this.getClient().get(`/repos/${owner}/${repo}/pulls/${prNumber}`);
       return response.data;
     } catch (error) {
       logger.error(`Error fetching PR #${prNumber} for ${owner}/${repo}:`, error.message);
@@ -90,7 +102,7 @@ class GitHubService {
    */
   async getUser(username) {
     try {
-      const response = await this.client.get(`/users/${username}`);
+      const response = await this.getClient().get(`/users/${username}`);
       return response.data;
     } catch (error) {
       logger.error(`Error fetching user ${username}:`, error.message);
