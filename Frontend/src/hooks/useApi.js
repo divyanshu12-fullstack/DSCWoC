@@ -1,21 +1,21 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 
-// Single source of truth for backend API base
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL.replace(/\/?$/, '')}/api/v1` : '') ||
-  'http://localhost:5000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
 
 /**
- * Fetch leaderboard data with caching
+ * Fetch leaderboard data with caching and filter support
+ * @param {number} page - Page number for pagination (default: 1)
+ * @param {number} limit - Items per page (default: 10)
+ * @param {string} filter - Filter type: 'overall' or 'weekly' (default: 'overall')
+ * @returns {Object} React Query result with leaderboard data
  * Cache: 5 minutes (300000ms)
  */
-export const useLeaderboard = (page = 1, limit = 10) => {
+export const useLeaderboard = (page = 1, limit = 10, filter = 'overall') => {
   return useQuery({
-    queryKey: ['leaderboard', page, limit],
+    queryKey: ['leaderboard', page, limit, filter],
     queryFn: async () => {
       const response = await fetch(
-        `${API_BASE_URL}/users/leaderboard?page=${page}&limit=${limit}`
+        `${API_BASE_URL}/users/leaderboard?page=${page}&limit=${limit}&filter=${filter}`
       );
       if (!response.ok) throw new Error('Failed to fetch leaderboard');
       return response.json();
@@ -125,13 +125,13 @@ export const useSubmitContact = () => {
         },
         body: JSON.stringify(formData),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.status !== 'success') {
         throw new Error(result.message || 'Failed to send message');
       }
-      
+
       return result;
     },
   });

@@ -23,6 +23,7 @@ import Contact from './pages/Contact';
 import FAQ from './pages/FAQ';
 import About from './pages/About';
 import Rewards from './pages/Rewards';
+import Leaderboard from './pages/Leaderboard/Leaderboard';
 import Projects from './pages/Projects';
 
 // Loading fallback component
@@ -42,7 +43,7 @@ const Home = () => {
     const handleLoad = () => {
       const elapsed = Date.now() - startTime;
       const remaining = Math.max(0, minLoadTime - elapsed);
-      
+
       setTimeout(() => {
         setIsLoading(false);
       }, remaining);
@@ -69,41 +70,41 @@ const Home = () => {
           <Starfield />
         </Suspense>
 
-      {/* Content */}
-      <div className="relative z-10 w-full">
-        <Navbar />
-        <div className="pt-16 sm:pt-20">
-          <Suspense fallback={<div className="w-full h-screen bg-gradient-to-b from-slate-900 to-slate-950 animate-pulse" />}>
-            <HeroSection />
-          </Suspense>
-          <AboutSection />
-          <Suspense fallback={<div className="h-screen bg-gradient-to-b from-slate-900 to-slate-950" />}>
-            <TimelineSection />
-          </Suspense>
+        {/* Content */}
+        <div className="relative z-10 w-full">
+          <Navbar />
+          <div className="pt-16 sm:pt-20">
+            <Suspense fallback={<div className="w-full h-screen bg-gradient-to-b from-slate-900 to-slate-950 animate-pulse" />}>
+              <HeroSection />
+            </Suspense>
+            <AboutSection />
+            <Suspense fallback={<div className="h-screen bg-gradient-to-b from-slate-900 to-slate-950" />}>
+              <TimelineSection />
+            </Suspense>
 
-          {/* Rewards Section - Lazy loaded with intersection observer */}
-          <div ref={rewardsRef}>
-            {rewardsVisible && (
-              <Suspense fallback={<div className="h-screen bg-gradient-to-b from-slate-950 via-indigo-950/30 to-slate-950" />}>
-                <RewardsSection />
-              </Suspense>
-            )}
+            {/* Rewards Section - Lazy loaded with intersection observer */}
+            <div ref={rewardsRef}>
+              {rewardsVisible && (
+                <Suspense fallback={<div className="h-screen bg-gradient-to-b from-slate-950 via-indigo-950/30 to-slate-950" />}>
+                  <RewardsSection />
+                </Suspense>
+              )}
+            </div>
+
+            {/* Benefits Section - Lazy loaded with intersection observer */}
+            <div ref={benefitsRef}>
+              {benefitsVisible && <BenefitsSection />}
+            </div>
+
+            {/* CTA Section - Lazy loaded with intersection observer */}
+            <div ref={ctaRef}>
+              {ctaVisible && <CTASection />}
+            </div>
+
+            <Footer />
           </div>
-
-          {/* Benefits Section - Lazy loaded with intersection observer */}
-          <div ref={benefitsRef}>
-            {benefitsVisible && <BenefitsSection />}
-          </div>
-
-          {/* CTA Section - Lazy loaded with intersection observer */}
-          <div ref={ctaRef}>
-            {ctaVisible && <CTASection />}
-          </div>
-
-          <Footer />
         </div>
       </div>
-    </div>
     </>
   );
 };
@@ -123,6 +124,7 @@ function App() {
         <Route path="/projects" element={<Projects />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
       </Routes>
     </Router>
   );
