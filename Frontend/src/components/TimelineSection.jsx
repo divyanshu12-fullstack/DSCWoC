@@ -91,7 +91,7 @@ const TimelineSection = () => {
 
   useEffect(() => {
     if (isMobile) return; // Skip GSAP animations on mobile
-    
+
     const timeline = timelineRef.current;
     const rocket = rocketRef.current;
     const path = pathRef.current;
@@ -146,7 +146,7 @@ const TimelineSection = () => {
           const point = path.getPointAtLength(progress * pathLength);
           const nextPoint = path.getPointAtLength(Math.min((progress + 0.01) * pathLength, pathLength));
           const angle = Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x) * (180 / Math.PI);
-          
+
           gsap.set(rocket, {
             x: point.x,
             y: point.y,
@@ -156,7 +156,7 @@ const TimelineSection = () => {
 
           const speed = Math.abs(nextPoint.y - point.y) + Math.abs(nextPoint.x - point.x);
           const thrustIntensity = Math.min(speed * 10, 1);
-          
+
           if (mainThrust) {
             gsap.set(mainThrust, {
               scaleY: 0.5 + thrustIntensity * 0.8,
@@ -230,23 +230,23 @@ const TimelineSection = () => {
       onEnter: () => {
         // Get current rocket position from the end of the path
         const endPoint = path.getPointAtLength(pathLength);
-        
+
         // Set rocket to end of path first
         gsap.set(rocket, {
           x: endPoint.x,
           y: endPoint.y,
           rotation: 180,
         });
-        
+
         // Massive thrust boost
-        gsap.to(mainThrust, { 
-          scaleY: 5, 
+        gsap.to(mainThrust, {
+          scaleY: 5,
           scaleX: 1.5,
           opacity: 1,
           duration: 0.3,
           ease: 'power2.out'
         });
-        
+
         // Create fog/smoke burst effect
         smokeTrailRef.current.forEach((smoke, index) => {
           if (smoke) {
@@ -266,7 +266,7 @@ const TimelineSection = () => {
             });
           }
         });
-        
+
         // Rocket burst straight down toward footer
         gsap.to(rocket, {
           y: endPoint.y + 1000,
@@ -274,7 +274,7 @@ const TimelineSection = () => {
           duration: 1.2,
           ease: 'power4.in',
         });
-        
+
         gsap.to(rocket, {
           opacity: 0,
           scale: 0.5,
@@ -373,7 +373,7 @@ const TimelineSection = () => {
           className="absolute inset-0 rounded-full"
           style={{
             background: `radial-gradient(circle at 30% 30%, ${detail}, ${color})`,
-            boxShadow: `0 0 ${size/2}px ${color}80, inset -${size/4}px -${size/4}px ${size/3}px rgba(0,0,0,0.5)`,
+            boxShadow: `0 0 ${size / 2}px ${color}80, inset -${size / 4}px -${size / 4}px ${size / 3}px rgba(0,0,0,0.5)`,
           }}
         >
           {/* Enhanced Surface details */}
@@ -427,7 +427,7 @@ const TimelineSection = () => {
                   height: `${size * 2.2}px`,
                   border: `${size * 0.12}px solid ${color}40`,
                   borderRadius: '50%',
-                  boxShadow: `0 0 ${size/3}px ${color}30, inset 0 0 ${size/5}px ${color}20`,
+                  boxShadow: `0 0 ${size / 3}px ${color}30, inset 0 0 ${size / 5}px ${color}20`,
                 }}></div>
                 {/* Middle ring */}
                 <div className="absolute" style={{
@@ -435,7 +435,7 @@ const TimelineSection = () => {
                   height: `${size * 1.9}px`,
                   border: `${size * 0.15}px solid ${color}60`,
                   borderRadius: '50%',
-                  boxShadow: `0 0 ${size/4}px ${color}40, inset 0 0 ${size/6}px ${color}30`,
+                  boxShadow: `0 0 ${size / 4}px ${color}40, inset 0 0 ${size / 6}px ${color}30`,
                 }}></div>
                 {/* Inner bright ring */}
                 <div className="absolute" style={{
@@ -443,7 +443,7 @@ const TimelineSection = () => {
                   height: `${size * 1.6}px`,
                   border: `${size * 0.1}px solid ${color}70`,
                   borderRadius: '50%',
-                  boxShadow: `0 0 ${size/5}px ${color}50, inset 0 0 ${size/8}px ${color}40`,
+                  boxShadow: `0 0 ${size / 5}px ${color}50, inset 0 0 ${size / 8}px ${color}40`,
                 }}></div>
                 {/* Cassini Division (gap) */}
                 <div className="absolute" style={{
@@ -461,14 +461,14 @@ const TimelineSection = () => {
                   height: `${size * 1.7}px`,
                   border: `${size * 0.06}px solid ${color}50`,
                   borderRadius: '50%',
-                  boxShadow: `0 0 ${size/5}px ${color}30`,
+                  boxShadow: `0 0 ${size / 5}px ${color}30`,
                 }}></div>
                 <div className="absolute" style={{
                   width: `${size * 1.5}px`,
                   height: `${size * 1.5}px`,
                   border: `${size * 0.04}px solid ${color}60`,
                   borderRadius: '50%',
-                  boxShadow: `0 0 ${size/6}px ${color}40`,
+                  boxShadow: `0 0 ${size / 6}px ${color}40`,
                 }}></div>
               </>
             )}
@@ -500,35 +500,35 @@ const TimelineSection = () => {
         </section>
       ) : (
         <section id="timeline" className="relative py-32 px-6 overflow-hidden" ref={timelineRef}>
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-5xl font-bold text-white text-center mb-20">
-          MISSION TIMELINE
-        </h2>
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-5xl font-bold text-white text-center mb-20">
+              MISSION TIMELINE
+            </h2>
 
-        <div className="relative" style={{ minHeight: '3500px' }}>
-          {/* SVG Path - Responsive curved path that works on all devices */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
-            <defs>
-              <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.6" />
-                <stop offset="25%" stopColor="#ec4899" stopOpacity="0.5" />
-                <stop offset="50%" stopColor="#a855f7" stopOpacity="0.6" />
-                <stop offset="75%" stopColor="#ec4899" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.7" />
-              </linearGradient>
-              
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-            </defs>
-            
-            <path
-              ref={pathRef}
-              d="M 300,60 
+            <div className="relative" style={{ minHeight: '3500px' }}>
+              {/* SVG Path - Responsive curved path that works on all devices */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
+                <defs>
+                  <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.6" />
+                    <stop offset="25%" stopColor="#ec4899" stopOpacity="0.5" />
+                    <stop offset="50%" stopColor="#a855f7" stopOpacity="0.6" />
+                    <stop offset="75%" stopColor="#ec4899" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.7" />
+                  </linearGradient>
+
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+
+                <path
+                  ref={pathRef}
+                  d="M 300,60 
                  C 320,120 350,160 400,240
                  S 450,380 420,480
                  C 400,550 370,580 320,640
@@ -543,193 +543,193 @@ const TimelineSection = () => {
                  S 270,2720 280,2850
                  C 300,2960 330,3020 380,3100
                  C 400,3150 410,3220 420,3300"
-              stroke="url(#pathGradient)"
-              strokeWidth="3"
-              fill="none"
-              strokeDasharray="10,5"
-              className="opacity-70"
-              filter="url(#glow)"
-            />
-          </svg>
-
-          {/* Rocket with custom design */}
-          <div
-            ref={rocketRef}
-            className="absolute w-[120px] h-[120px]"
-            style={{ 
-              zIndex: 10,
-              transformOrigin: 'center center',
-              willChange: 'transform',
-            }}
-          >
-            
-            <div className="relative">
-              {/* Smoke trail */}
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={`smoke-${i}`}
-                  ref={el => smokeTrailRef.current[i] = el}
-                  className="absolute top-24 left-1/2 -translate-x-1/2"
-                  style={{
-                    width: '30px',
-                    height: '30px',
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, rgba(139, 92, 246, 0.7) 0%, rgba(236, 72, 153, 0.5) 40%, rgba(168, 85, 247, 0.3) 70%, transparent 100%)',
-                    filter: 'blur(4px)',
-                    zIndex: 9998,
-                  }}
+                  stroke="url(#pathGradient)"
+                  strokeWidth="3"
+                  fill="none"
+                  strokeDasharray="10,5"
+                  className="opacity-70"
+                  filter="url(#glow)"
                 />
-              ))}
-              <svg width="100%" height="100%" viewBox="0 0 60 60" className="relative z-10">
-                <defs>
-                  <linearGradient id="rocketGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#fbbf24"/>
-                    <stop offset="50%" stopColor="#f97316"/>
-                    <stop offset="100%" stopColor="#ec4899"/>
-                  </linearGradient>
-                  <linearGradient id="rocketBodyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#a5b4fc"/>
-                    <stop offset="50%" stopColor="#e0e7ff"/>
-                    <stop offset="100%" stopColor="#a5b4fc"/>
-                  </linearGradient>
-                  <radialGradient id="windowGlowRocket">
-                    <stop offset="0%" stopColor="#60a5fa"/>
-                    <stop offset="100%" stopColor="#1e40af"/>
-                  </radialGradient>
-                </defs>
-                
-                {/* Main body with panel details */}
-                <rect x="23" y="20" width="14" height="22" fill="url(#rocketBodyGradient)" rx="1.5" stroke="#818cf8" strokeWidth="0.5"/>
-                
-                {/* Body panel lines */}
-                <line x1="23" y1="26" x2="37" y2="26" stroke="#6366f1" strokeWidth="0.4" opacity="0.6"/>
-                <line x1="23" y1="31" x2="37" y2="31" stroke="#6366f1" strokeWidth="0.4" opacity="0.6"/>
-                <line x1="23" y1="36" x2="37" y2="36" stroke="#6366f1" strokeWidth="0.4" opacity="0.6"/>
-                <line x1="30" y1="20" x2="30" y2="42" stroke="#6366f1" strokeWidth="0.4" opacity="0.4"/>
-                
-                {/* Multi-layer nose cone */}
-                <path d="M 30,4 L 37,20 L 23,20 Z" fill="url(#rocketGradient)" stroke="#f97316" strokeWidth="0.5"/>
-                <path d="M 30,6 L 35,20 L 25,20 Z" fill="#fbbf24" opacity="0.4"/>
-                <circle cx="30" cy="11" r="1.5" fill="#fef3c7" opacity="0.7"/>
-                
-                {/* Windows */}
-                <circle cx="30" cy="25" r="3" fill="url(#windowGlowRocket)" opacity="0.9" stroke="#3b82f6" strokeWidth="0.4"/>
-                <circle cx="30" cy="25" r="1.8" fill="#60a5fa" opacity="0.7"/>
-                <circle cx="30" cy="33" r="2" fill="url(#windowGlowRocket)" opacity="0.7" stroke="#3b82f6" strokeWidth="0.3"/>
-                
-                {/* Detailed wings with stripes */}
-                <g>
-                  <path d="M 23,32 L 15,47 L 23,43 Z" fill="#6366f1" stroke="#4f46e5" strokeWidth="0.5"/>
-                  <path d="M 23,32 L 16,45 L 23,41 Z" fill="#818cf8" opacity="0.5"/>
-                  <line x1="19" y1="37" x2="23" y2="37" stroke="#4f46e5" strokeWidth="0.4"/>
-                </g>
-                <g>
-                  <path d="M 37,32 L 45,47 L 37,43 Z" fill="#6366f1" stroke="#4f46e5" strokeWidth="0.5"/>
-                  <path d="M 37,32 L 44,45 L 37,41 Z" fill="#818cf8" opacity="0.5"/>
-                  <line x1="41" y1="37" x2="37" y2="37" stroke="#4f46e5" strokeWidth="0.4"/>
-                </g>
-                
-                {/* Engine nozzles */}
-                <rect x="25" y="40" width="4" height="3" fill="#374151" rx="0.5"/>
-                <rect x="31" y="40" width="4" height="3" fill="#374151" rx="0.5"/>
-                
-                {/* RCS thrusters */}
-                <circle cx="21" cy="28" r="1.2" fill="#374151"/>
-                <circle cx="39" cy="28" r="1.2" fill="#374151"/>
-                
-                {/* Antenna */}
-                <line x1="30" y1="4" x2="30" y2="1" stroke="#fbbf24" strokeWidth="0.6"/>
-                <circle cx="30" cy="1" r="0.8" fill="#fbbf24"/>
               </svg>
-              
-              {/* Main thrust */}
-              <div ref={mainThrustRef} className="absolute top-[84px] left-1/2 -translate-x-1/2" style={{ transformOrigin: 'top center' }}>
-                <div style={{ width: '45px', height: '75px', background: 'linear-gradient(to bottom, #f97316 0%, #ec4899 50%, #8b5cf6 100%)', clipPath: 'polygon(50% 100%, 0% 0%, 100% 0%)', filter: 'blur(2px)', opacity: 0.9 }}/>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2" style={{ width: '30px', height: '60px', background: 'linear-gradient(to bottom, #fbbf24 0%, #f97316 50%, #ec4899 100%)', clipPath: 'polygon(50% 100%, 0% 0%, 100% 0%)', filter: 'blur(1px)' }}/>
+
+              {/* Rocket with custom design */}
+              <div
+                ref={rocketRef}
+                className="absolute w-[120px] h-[120px]"
+                style={{
+                  zIndex: 10,
+                  transformOrigin: 'center center',
+                  willChange: 'transform',
+                }}
+              >
+
+                <div className="relative">
+                  {/* Smoke trail */}
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={`smoke-${i}`}
+                      ref={el => smokeTrailRef.current[i] = el}
+                      className="absolute top-24 left-1/2 -translate-x-1/2"
+                      style={{
+                        width: '30px',
+                        height: '30px',
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.7) 0%, rgba(236, 72, 153, 0.5) 40%, rgba(168, 85, 247, 0.3) 70%, transparent 100%)',
+                        filter: 'blur(4px)',
+                        zIndex: 9998,
+                      }}
+                    />
+                  ))}
+                  <svg width="100%" height="100%" viewBox="0 0 60 60" className="relative z-10">
+                    <defs>
+                      <linearGradient id="rocketGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#fbbf24" />
+                        <stop offset="50%" stopColor="#f97316" />
+                        <stop offset="100%" stopColor="#ec4899" />
+                      </linearGradient>
+                      <linearGradient id="rocketBodyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#a5b4fc" />
+                        <stop offset="50%" stopColor="#e0e7ff" />
+                        <stop offset="100%" stopColor="#a5b4fc" />
+                      </linearGradient>
+                      <radialGradient id="windowGlowRocket">
+                        <stop offset="0%" stopColor="#60a5fa" />
+                        <stop offset="100%" stopColor="#1e40af" />
+                      </radialGradient>
+                    </defs>
+
+                    {/* Main body with panel details */}
+                    <rect x="23" y="20" width="14" height="22" fill="url(#rocketBodyGradient)" rx="1.5" stroke="#818cf8" strokeWidth="0.5" />
+
+                    {/* Body panel lines */}
+                    <line x1="23" y1="26" x2="37" y2="26" stroke="#6366f1" strokeWidth="0.4" opacity="0.6" />
+                    <line x1="23" y1="31" x2="37" y2="31" stroke="#6366f1" strokeWidth="0.4" opacity="0.6" />
+                    <line x1="23" y1="36" x2="37" y2="36" stroke="#6366f1" strokeWidth="0.4" opacity="0.6" />
+                    <line x1="30" y1="20" x2="30" y2="42" stroke="#6366f1" strokeWidth="0.4" opacity="0.4" />
+
+                    {/* Multi-layer nose cone */}
+                    <path d="M 30,4 L 37,20 L 23,20 Z" fill="url(#rocketGradient)" stroke="#f97316" strokeWidth="0.5" />
+                    <path d="M 30,6 L 35,20 L 25,20 Z" fill="#fbbf24" opacity="0.4" />
+                    <circle cx="30" cy="11" r="1.5" fill="#fef3c7" opacity="0.7" />
+
+                    {/* Windows */}
+                    <circle cx="30" cy="25" r="3" fill="url(#windowGlowRocket)" opacity="0.9" stroke="#3b82f6" strokeWidth="0.4" />
+                    <circle cx="30" cy="25" r="1.8" fill="#60a5fa" opacity="0.7" />
+                    <circle cx="30" cy="33" r="2" fill="url(#windowGlowRocket)" opacity="0.7" stroke="#3b82f6" strokeWidth="0.3" />
+
+                    {/* Detailed wings with stripes */}
+                    <g>
+                      <path d="M 23,32 L 15,47 L 23,43 Z" fill="#6366f1" stroke="#4f46e5" strokeWidth="0.5" />
+                      <path d="M 23,32 L 16,45 L 23,41 Z" fill="#818cf8" opacity="0.5" />
+                      <line x1="19" y1="37" x2="23" y2="37" stroke="#4f46e5" strokeWidth="0.4" />
+                    </g>
+                    <g>
+                      <path d="M 37,32 L 45,47 L 37,43 Z" fill="#6366f1" stroke="#4f46e5" strokeWidth="0.5" />
+                      <path d="M 37,32 L 44,45 L 37,41 Z" fill="#818cf8" opacity="0.5" />
+                      <line x1="41" y1="37" x2="37" y2="37" stroke="#4f46e5" strokeWidth="0.4" />
+                    </g>
+
+                    {/* Engine nozzles */}
+                    <rect x="25" y="40" width="4" height="3" fill="#374151" rx="0.5" />
+                    <rect x="31" y="40" width="4" height="3" fill="#374151" rx="0.5" />
+
+                    {/* RCS thrusters */}
+                    <circle cx="21" cy="28" r="1.2" fill="#374151" />
+                    <circle cx="39" cy="28" r="1.2" fill="#374151" />
+
+                    {/* Antenna */}
+                    <line x1="30" y1="4" x2="30" y2="1" stroke="#fbbf24" strokeWidth="0.6" />
+                    <circle cx="30" cy="1" r="0.8" fill="#fbbf24" />
+                  </svg>
+
+                  {/* Main thrust */}
+                  <div ref={mainThrustRef} className="absolute top-[84px] left-1/2 -translate-x-1/2" style={{ transformOrigin: 'top center' }}>
+                    <div style={{ width: '45px', height: '75px', background: 'linear-gradient(to bottom, #f97316 0%, #ec4899 50%, #8b5cf6 100%)', clipPath: 'polygon(50% 100%, 0% 0%, 100% 0%)', filter: 'blur(2px)', opacity: 0.9 }} />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2" style={{ width: '30px', height: '60px', background: 'linear-gradient(to bottom, #fbbf24 0%, #f97316 50%, #ec4899 100%)', clipPath: 'polygon(50% 100%, 0% 0%, 100% 0%)', filter: 'blur(1px)' }} />
+                  </div>
+
+                  {/* Side thrust particles */}
+                  {[...Array(4)].map((_, i) => (
+                    <div key={`particle-${i}`} ref={el => sideThrustRef.current[i] = el} className="absolute" style={{ top: '75px', left: i % 2 === 0 ? '8px' : '68px', width: '12px', height: '12px', borderRadius: '50%', background: 'radial-gradient(circle, #fbbf24 0%, #f97316 50%, transparent 100%)' }} />
+                  ))}
+                </div>
               </div>
-              
-              {/* Side thrust particles */}
-              {[...Array(4)].map((_, i) => (
-                <div key={`particle-${i}`} ref={el => sideThrustRef.current[i] = el} className="absolute" style={{ top: '75px', left: i % 2 === 0 ? '8px' : '68px', width: '12px', height: '12px', borderRadius: '50%', background: 'radial-gradient(circle, #fbbf24 0%, #f97316 50%, transparent 100%)' }}/>
+
+              {/* Planets and phase info */}
+              {phases.map((phase, index) => (
+                <div
+                  key={index}
+                  className="absolute left-0 right-0 flex items-center gap-8"
+                  style={{
+                    top: `${phase.pathY}px`,
+                    zIndex: 10,
+                  }}
+                >
+                  {(() => {
+                    const isMissionComplete = phase.title === 'MISSION COMPLETE';
+                    return (
+                      <>
+                        {index % 2 === 0 && (
+                          <>
+                            {/* Left side content */}
+                            <div className="flex-1 flex justify-end pr-8">
+                              <div className="glass-effect rounded-xl p-6 max-w-md hover:scale-105 transition-all duration-300 hover:border-cosmic-purple/50 hover:shadow-lg hover:shadow-cosmic-purple/20">
+                                <h3 className="text-2xl font-bold text-cosmic-purple mb-2">
+                                  {phase.title}
+                                </h3>
+                                <p className="text-sm text-nebula-pink font-semibold mb-3">
+                                  {phase.subtitle}
+                                </p>
+                                <p className="text-gray-300 text-sm leading-relaxed">{phase.description}</p>
+                              </div>
+                            </div>
+
+                            {/* Planet - centered on path */}
+                            <div className="flex-shrink-0 relative" style={{ perspective: '800px', marginLeft: '-50px' }}>
+                              {isMissionComplete && renderGalaxy()}
+                              <div className="relative" style={{ zIndex: 1 }}>
+                                {renderPlanet(phase.planet, index)}
+                              </div>
+                            </div>
+
+                            <div className="flex-1"></div>
+                          </>
+                        )}
+
+                        {index % 2 === 1 && (
+                          <>
+                            <div className="flex-1"></div>
+
+                            {/* Planet - centered on path */}
+                            <div className="flex-shrink-0 relative" style={{ perspective: '800px', marginRight: '-50px' }}>
+                              {isMissionComplete && renderGalaxy()}
+                              <div className="relative" style={{ zIndex: 1 }}>
+                                {renderPlanet(phase.planet, index)}
+                              </div>
+                            </div>
+
+                            {/* Right side content */}
+                            <div className="flex-1 flex justify-start pl-8">
+                              <div className="glass-effect rounded-xl p-6 max-w-md hover:scale-105 transition-all duration-300 hover:border-cosmic-purple/50 hover:shadow-lg hover:shadow-cosmic-purple/20">
+                                <h3 className="text-2xl font-bold text-cosmic-purple mb-2">
+                                  {phase.title}
+                                </h3>
+                                <p className="text-sm text-nebula-pink font-semibold mb-3">
+                                  {phase.subtitle}
+                                </p>
+                                <p className="text-gray-300 text-sm leading-relaxed">{phase.description}</p>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
               ))}
             </div>
           </div>
-
-          {/* Planets and phase info */}
-          {phases.map((phase, index) => (
-            <div
-              key={index}
-              className="absolute left-0 right-0 flex items-center gap-8"
-              style={{
-                top: `${phase.pathY}px`,
-                zIndex: 10,
-              }}
-            >
-              {(() => {
-                const isMissionComplete = phase.title === 'MISSION COMPLETE';
-                return (
-                  <>
-              {index % 2 === 0 && (
-                <>
-                  {/* Left side content */}
-                  <div className="flex-1 flex justify-end pr-8">
-                    <div className="glass-effect rounded-xl p-6 max-w-md hover:scale-105 transition-all duration-300 hover:border-cosmic-purple/50 hover:shadow-lg hover:shadow-cosmic-purple/20">
-                      <h3 className="text-2xl font-bold text-cosmic-purple mb-2">
-                        {phase.title}
-                      </h3>
-                      <p className="text-sm text-nebula-pink font-semibold mb-3">
-                        {phase.subtitle}
-                      </p>
-                      <p className="text-gray-300 text-sm leading-relaxed">{phase.description}</p>
-                    </div>
-                  </div>
-                  
-                  {/* Planet - centered on path */}
-                  <div className="flex-shrink-0 relative" style={{ perspective: '800px', marginLeft: '-50px' }}>
-                    {isMissionComplete && renderGalaxy()}
-                    <div className="relative" style={{ zIndex: 1 }}>
-                      {renderPlanet(phase.planet, index)}
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1"></div>
-                </>
-              )}
-
-              {index % 2 === 1 && (
-                <>
-                  <div className="flex-1"></div>
-                  
-                  {/* Planet - centered on path */}
-                  <div className="flex-shrink-0 relative" style={{ perspective: '800px', marginRight: '-50px' }}>
-                    {isMissionComplete && renderGalaxy()}
-                    <div className="relative" style={{ zIndex: 1 }}>
-                      {renderPlanet(phase.planet, index)}
-                    </div>
-                  </div>
-                  
-                  {/* Right side content */}
-                  <div className="flex-1 flex justify-start pl-8">
-                    <div className="glass-effect rounded-xl p-6 max-w-md hover:scale-105 transition-all duration-300 hover:border-cosmic-purple/50 hover:shadow-lg hover:shadow-cosmic-purple/20">
-                      <h3 className="text-2xl font-bold text-cosmic-purple mb-2">
-                        {phase.title}
-                      </h3>
-                      <p className="text-sm text-nebula-pink font-semibold mb-3">
-                        {phase.subtitle}
-                      </p>
-                      <p className="text-gray-300 text-sm leading-relaxed">{phase.description}</p>
-                    </div>
-                  </div>
-                </>
-              )}
-                  </>
-                );
-              })()}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+        </section>
       )}
     </>
   );

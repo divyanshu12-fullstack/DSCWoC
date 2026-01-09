@@ -367,10 +367,10 @@ const RewardsSection = () => {
                   <div
                     key={index}
                     className={`rounded-lg p-4 backdrop-blur-sm border transition-all ${tier.isGold
-                        ? 'bg-yellow-900/60 border-yellow-400/80'
-                        : tier.isSilver
-                          ? 'bg-slate-800/60 border-slate-400/80'
-                          : 'bg-orange-900/60 border-orange-400/80'
+                      ? 'bg-yellow-900/60 border-yellow-400/80'
+                      : tier.isSilver
+                        ? 'bg-slate-800/60 border-slate-400/80'
+                        : 'bg-orange-900/60 border-orange-400/80'
                       }`}
                   >
                     {/* Tier header */}
@@ -583,22 +583,22 @@ const RewardsSection = () => {
                       if (el) tiers.current[index] = el;
                     }}
                     className={`relative group rounded-2xl p-8 backdrop-blur-sm border-2 transition-all duration-500 hover:scale-105 overflow-hidden ${tier.isGold
-                        ? 'bg-gradient-to-br from-yellow-900/50 via-amber-800/40 to-orange-900/50 border-yellow-400/60 lg:scale-105 shadow-2xl shadow-yellow-500/30 hover:shadow-yellow-400/50'
-                        : tier.isSilver
-                          ? 'bg-gradient-to-br from-slate-800/50 via-gray-700/40 to-slate-800/50 border-slate-400/60 shadow-2xl shadow-slate-400/20 hover:shadow-slate-300/40'
-                          : 'bg-gradient-to-br from-orange-900/40 via-amber-800/30 to-orange-900/40 border-orange-500/50 shadow-xl shadow-orange-500/20 hover:shadow-orange-400/30'
+                      ? 'bg-gradient-to-br from-yellow-900/50 via-amber-800/40 to-orange-900/50 border-yellow-400/60 lg:scale-105 shadow-2xl shadow-yellow-500/30 hover:shadow-yellow-400/50'
+                      : tier.isSilver
+                        ? 'bg-gradient-to-br from-slate-800/50 via-gray-700/40 to-slate-800/50 border-slate-400/60 shadow-2xl shadow-slate-400/20 hover:shadow-slate-300/40'
+                        : 'bg-gradient-to-br from-orange-900/40 via-amber-800/30 to-orange-900/40 border-orange-500/50 shadow-xl shadow-orange-500/20 hover:shadow-orange-400/30'
                       }`}
                   >
                     {/* Cosmic glow effect */}
                     <div className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 ${tier.isGold ? 'bg-gradient-to-t from-yellow-400/50 to-transparent' :
-                        tier.isSilver ? 'bg-gradient-to-t from-slate-300/50 to-transparent' :
-                          'bg-gradient-to-t from-orange-400/50 to-transparent'
+                      tier.isSilver ? 'bg-gradient-to-t from-slate-300/50 to-transparent' :
+                        'bg-gradient-to-t from-orange-400/50 to-transparent'
                       }`} />
 
                     {/* Shimmer overlay on hover */}
                     <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${tier.isGold ? 'shimmer bg-gradient-to-r from-transparent via-yellow-200/30 to-transparent' :
-                        tier.isSilver ? 'shimmer bg-gradient-to-r from-transparent via-slate-200/30 to-transparent' :
-                          'shimmer bg-gradient-to-r from-transparent via-orange-200/30 to-transparent'
+                      tier.isSilver ? 'shimmer bg-gradient-to-r from-transparent via-slate-200/30 to-transparent' :
+                        'shimmer bg-gradient-to-r from-transparent via-orange-200/30 to-transparent'
                       }`} />
 
                     {/* Orbiting particles */}
@@ -617,8 +617,8 @@ const RewardsSection = () => {
 
                     {/* Rank Badge with shimmer */}
                     <div className={`inline-block px-4 py-1 rounded-full text-xs font-bold mb-3 relative ${tier.isGold ? 'bg-yellow-500/20 text-yellow-200 border border-yellow-400/30' :
-                        tier.isSilver ? 'bg-slate-500/20 text-slate-200 border border-slate-400/30' :
-                          'bg-orange-500/20 text-orange-200 border border-orange-400/30'
+                      tier.isSilver ? 'bg-slate-500/20 text-slate-200 border border-slate-400/30' :
+                        'bg-orange-500/20 text-orange-200 border border-orange-400/30'
                       }`}>
                       <span className={tier.isGold || tier.isSilver || tier.isBronze ? 'shimmer block' : ''}>
                         {tier.rank}
@@ -633,14 +633,14 @@ const RewardsSection = () => {
                     {/* Divider with stars */}
                     <div className="flex items-center justify-center gap-2 my-6">
                       <div className={`h-px flex-1 ${tier.isGold ? 'bg-gradient-to-r from-transparent to-yellow-400/50' :
-                          tier.isSilver ? 'bg-gradient-to-r from-transparent to-slate-400/50' :
-                            'bg-gradient-to-r from-transparent to-orange-400/50'
+                        tier.isSilver ? 'bg-gradient-to-r from-transparent to-slate-400/50' :
+                          'bg-gradient-to-r from-transparent to-orange-400/50'
                         }`} />
                       <Star className={`w-4 h-4 ${tier.isGold ? 'text-yellow-400' : tier.isSilver ? 'text-slate-300' : 'text-orange-400'
                         }`} />
                       <div className={`h-px flex-1 ${tier.isGold ? 'bg-gradient-to-l from-transparent to-yellow-400/50' :
-                          tier.isSilver ? 'bg-gradient-to-l from-transparent to-slate-400/50' :
-                            'bg-gradient-to-l from-transparent to-orange-400/50'
+                        tier.isSilver ? 'bg-gradient-to-l from-transparent to-slate-400/50' :
+                          'bg-gradient-to-l from-transparent to-orange-400/50'
                         }`} />
                     </div>
 
@@ -652,8 +652,8 @@ const RewardsSection = () => {
                           className="text-gray-200 text-sm sm:text-base flex items-start gap-3 group/item"
                         >
                           <reward.icon className={`w-4 h-4 flex-shrink-0 mt-0.5 transition-colors ${tier.isGold ? 'text-yellow-300 group-hover/item:text-yellow-200' :
-                              tier.isSilver ? 'text-slate-300 group-hover/item:text-slate-200' :
-                                'text-orange-300 group-hover/item:text-orange-200'
+                            tier.isSilver ? 'text-slate-300 group-hover/item:text-slate-200' :
+                              'text-orange-300 group-hover/item:text-orange-200'
                             }`} />
                           <span className="group-hover/item:text-white transition-colors">{reward.text}</span>
                         </li>

@@ -13,6 +13,26 @@ const BenefitsSection = () => {
   const sectionRef = useRef(null);
   const orbitRefs = useRef([]);
 
+  // Deterministic "random" that is pure/idempotent (eslint react-hooks/purity safe).
+  const seeded = (seed) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+
+  const buildStars = (count, opacityBase, opacityRange) =>
+    Array.from({ length: count }, (_, i) => {
+      const base = i * 7 + 1;
+      return {
+        top: `${seeded(base + 1) * 100}%`,
+        left: `${seeded(base + 2) * 100}%`,
+        animationDelay: `${seeded(base + 3) * 3}s`,
+        opacity: seeded(base + 4) * opacityRange + opacityBase,
+      };
+    });
+
+  const mobileStars = buildStars(20, 0.2, 0.5);
+  const desktopStars = buildStars(30, 0.3, 0.7);
+
   const benefits = [
     {
       icon: '🚀',
@@ -188,16 +208,11 @@ const BenefitsSection = () => {
       <section id="rewards" className="relative py-12 px-3 overflow-hidden w-full" style={{ display: 'block', visibility: 'visible' }}>
         {/* Animated background stars */}
         <div className="absolute inset-0 pointer-events-none">
-          {[...Array(20)].map((_, i) => (
+          {mobileStars.map((star, i) => (
             <div
               key={i}
               className="absolute w-0.5 h-0.5 bg-white rounded-full animate-pulse"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                opacity: Math.random() * 0.5 + 0.2,
-              }}
+              style={star}
             />
           ))}
         </div>
@@ -250,16 +265,11 @@ const BenefitsSection = () => {
     <section id="rewards" className="relative py-16 sm:py-20 md:py-32 px-4 sm:px-6 md:px-6 overflow-hidden w-full" style={{ display: 'block', visibility: 'visible', zIndex: 'auto' }}>
       {/* Animated background stars */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(30)].map((_, i) => (
+        {desktopStars.map((star, i) => (
           <div
             key={i}
             className="absolute w-1 h-1 bg-white rounded-full animate-pulse"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              opacity: Math.random() * 0.7 + 0.3,
-            }}
+            style={star}
           />
         ))}
       </div>
