@@ -364,6 +364,46 @@ export const getMe = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc    Get current user badges
+ * @route   GET /api/v1/users/me/badges
+ * @access  Private
+ */
+export const getUserBadges = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id)
+    .populate('badges', 'name description icon color rarity points_reward')
+    .select('-__v');
+
+  if (!user) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      status: 'error',
+      message: ERROR_MESSAGES.NOT_FOUND,
+    });
+  }
+
+  successResponse(res, user.badges, 'User badges retrieved successfully');
+});
+
+/**
+ * @desc    Get current user points
+ * @route   GET /api/v1/users/me/points
+ * @access  Private
+ */
+export const getUserPoints = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id)
+    .populate('badges', 'name description icon color rarity points_reward')
+    .select('-__v');
+
+  if (!user) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      status: 'error',
+      message: ERROR_MESSAGES.NOT_FOUND,
+    });
+  }
+
+  successResponse(res, user.stats.points, 'User points retrieved successfully');
+});
+
+/**
  * @desc    Update user role (Admin only)
  * @route   PUT /api/v1/users/:id/role
  * @access  Private (Admin)

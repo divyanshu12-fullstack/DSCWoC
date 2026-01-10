@@ -26,59 +26,42 @@ export const getOverview = async (req, res) => {
 
     // Pull requests stats
     const totalPRs = await PullRequest.countDocuments();
-    const mergedPRs = await PullRequest.countDocuments({ status: 'Merged' });
-    const pendingPRs = await PullRequest.countDocuments({ status: 'Pending' });
+    const mergedPRs = await PullRequest.countDocuments({ status: 'merged' });
+    const pendingPRs = await PullRequest.countDocuments({ status: 'open' });
 
-    // Points distributed
+    // Points distributed - use stats.points field
     const pointsResult = await User.aggregate([
-      { $group: { _id: null, totalPoints: { $sum: '$totalPoints' } } }
+      { $group: { _id: null, totalPoints: { $sum: '$stats.points' } } }
     ]);
     const totalPointsDistributed = pointsResult[0]?.totalPoints || 0;
 
     // Badges issued
     const totalBadgesIssued = await User.aggregate([
-      { $project: { badgeCount: { $size: '$badges' } } },
+      { $project: { badgeCount: { $size: { $ifNull: ['$badges', []] } } } },
       { $group: { _id: null, total: { $sum: '$badgeCount' } } }
     ]);
     const badgesIssued = totalBadgesIssued[0]?.total || 0;
 
     // Contact messages stats
     const totalContacts = await Contact.countDocuments();
-    const newContacts = await Contact.countDocuments({ status: 'New' });
-    const respondedContacts = await Contact.countDocuments({ status: 'Responded' });
-
-    // Recent activity (last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    // PRs per day for last 30 days
-    const prsPerDay = await PullRequest.aggregate([
-      { $match: { createdAt: { $gte: thirtyDaysAgo } } },
-      {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-          count: { $sum: 1 }
-        }
-      },
-      { $sort: { _id: 1 } }
-    ]);
+    const newContacts = await Contact.countDocuments({ status: 'new' });
 
     // Top 5 contributors
     const topContributors = await User.find({ role: 'Contributor' })
-      .sort({ totalPoints: -1 })
+      .sort({ 'stats.points': -1 })
       .limit(5)
-      .select('username fullName avatar_url totalPoints')
+      .select('github_username fullName avatar_url stats.points')
       .lean();
 
     // Projects with no activity (no PRs in last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const inactiveProjects = await Project.find({
+    const inactiveProjects = await Project.countDocuments({
       isActive: true,
       updatedAt: { $lt: sevenDaysAgo }
-    }).countDocuments();
+    });
 
-    res.json(successResponse({
+    successResponse(res, {
       stats: {
         totalUsers,
         activeContributors,
@@ -90,25 +73,25 @@ export const getOverview = async (req, res) => {
         totalPointsDistributed,
         badgesIssued,
         totalContacts,
-        newContacts,
-        respondedContacts
+        newContacts
       },
-      charts: {
-        prsPerDay
-      },
-      topContributors,
+      topContributors: topContributors.map(u => ({
+        _id: u._id,
+        username: u.github_username,
+        fullName: u.fullName,
+        avatar_url: u.avatar_url,
+        totalPoints: u.stats?.points || 0
+      })),
       alerts: {
         pendingPRs,
         inactiveProjects,
         newContacts
       }
-    }, 'Admin overview fetched successfully'));
+    }, 'Admin overview fetched successfully');
 
   } catch (error) {
     logger.error('Error fetching admin overview:', error);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
-      errorResponse('Failed to fetch overview statistics')
-    );
+    errorResponse(res, 'Failed to fetch overview statistics', HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -126,7 +109,7 @@ export const getAllUsers = async (req, res) => {
     if (status) filter.isActive = status === 'active';
     if (search) {
       filter.$or = [
-        { username: { $regex: search, $options: 'i' } },
+        { github_username: { $regex: search, $options: 'i' } },
         { fullName: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } }
       ];
@@ -144,21 +127,33 @@ export const getAllUsers = async (req, res) => {
 
     const total = await User.countDocuments(filter);
 
-    res.json(successResponse({
-      users,
+    // Map to expected format
+    const mappedUsers = users.map(u => ({
+      _id: u._id,
+      username: u.github_username,
+      fullName: u.fullName,
+      email: u.email,
+      avatar_url: u.avatar_url,
+      role: u.role,
+      track: u.track || 'N/A',
+      totalPoints: u.stats?.points || 0,
+      isActive: u.isActive,
+      badges: u.badges
+    }));
+
+    successResponse(res, {
+      users: mappedUsers,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
         total,
         pages: Math.ceil(total / parseInt(limit))
       }
-    }, 'Users fetched successfully'));
+    }, 'Users fetched successfully');
 
   } catch (error) {
     logger.error('Error fetching users:', error);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
-      errorResponse('Failed to fetch users')
-    );
+    errorResponse(res, 'Failed to fetch users', HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -344,8 +339,7 @@ export const getAllProjects = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const projects = await Project.find(filter)
-      .populate('mentor', 'username fullName avatar_url')
-      .populate('contributors', 'username')
+      .populate('mentor', 'github_username fullName avatar_url')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
@@ -355,13 +349,22 @@ export const getAllProjects = async (req, res) => {
     const projectsWithStats = await Promise.all(
       projects.map(async (project) => {
         const prCount = await PullRequest.countDocuments({ project: project._id });
-        return { ...project, prCount };
+        return { 
+          ...project, 
+          prCount,
+          repoLink: project.github_url,
+          track: project.difficulty || 'N/A',
+          mentor: project.mentor ? {
+            username: project.mentor.github_username,
+            fullName: project.mentor.fullName
+          } : null
+        };
       })
     );
 
     const total = await Project.countDocuments(filter);
 
-    res.json(successResponse({
+    successResponse(res, {
       projects: projectsWithStats,
       pagination: {
         page: parseInt(page),
@@ -369,13 +372,11 @@ export const getAllProjects = async (req, res) => {
         total,
         pages: Math.ceil(total / parseInt(limit))
       }
-    }, 'Projects fetched successfully'));
+    }, 'Projects fetched successfully');
 
   } catch (error) {
     logger.error('Error fetching projects:', error);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
-      errorResponse('Failed to fetch projects')
-    );
+    errorResponse(res, 'Failed to fetch projects', HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -548,7 +549,7 @@ export const getAllPRs = async (req, res) => {
 
     const filter = {};
     if (project) filter.project = project;
-    if (contributor) filter.contributor = contributor;
+    if (contributor) filter.user = contributor;
     if (status) filter.status = status;
     
     if (dateFrom || dateTo) {
@@ -560,8 +561,8 @@ export const getAllPRs = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const prs = await PullRequest.find(filter)
-      .populate('contributor', 'username fullName avatar_url')
-      .populate('project', 'name repoLink')
+      .populate('user', 'github_username fullName avatar_url')
+      .populate('project', 'name github_url')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
@@ -569,21 +570,32 @@ export const getAllPRs = async (req, res) => {
 
     const total = await PullRequest.countDocuments(filter);
 
-    res.json(successResponse({
-      prs,
+    // Map to expected format
+    const mappedPRs = prs.map(pr => ({
+      _id: pr._id,
+      prNumber: pr.github_pr_number,
+      title: pr.title,
+      prLink: pr.github_url,
+      status: pr.status,
+      pointsAwarded: pr.points || 0,
+      contributor: pr.user ? { username: pr.user.github_username } : null,
+      project: pr.project ? { name: pr.project.name } : null,
+      createdAt: pr.createdAt
+    }));
+
+    successResponse(res, {
+      prs: mappedPRs,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
         total,
         pages: Math.ceil(total / parseInt(limit))
       }
-    }, 'Pull requests fetched successfully'));
+    }, 'Pull requests fetched successfully');
 
   } catch (error) {
     logger.error('Error fetching PRs:', error);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
-      errorResponse('Failed to fetch pull requests')
-    );
+    errorResponse(res, 'Failed to fetch pull requests', HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 

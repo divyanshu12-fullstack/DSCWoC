@@ -158,7 +158,7 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Admin/Mentor Login */}
+              {/* Mentor Login */}
               <button
                 onClick={handleAdminLogin}
                 disabled={loading}
@@ -167,7 +167,7 @@ const Login = () => {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                {loading && loginType === 'mentor' ? 'Signing in...' : 'Admin/Mentor Login'}
+                {loading && loginType === 'mentor' ? 'Signing in...' : 'Mentor Login'}
               </button>
             </div>
 
@@ -183,8 +183,8 @@ const Login = () => {
               <h3 className="text-stellar-cyan font-medium mb-2">Login Information:</h3>
               <ul className="text-gray-300 text-sm space-y-1">
                 <li>• <strong>Contributors:</strong> Use "Continue with GitHub"</li>
-                <li>• <strong>Mentors/Admins:</strong> Use "Admin/Mentor Login"</li>
-                <li>• Role assignment is handled by administrators</li>
+                <li>• <strong>Mentors:</strong> Use "Mentor Login"</li>
+                <li>• <strong>Admins:</strong> Access via <a href="/admin" className="text-stellar-cyan hover:underline">/admin</a> route</li>
               </ul>
             </div>
           </div>

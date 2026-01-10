@@ -141,3 +141,137 @@
       inset 0 0 20px rgba(139, 92, 246, 0.2);
   }
 }
+
+@layer base {
+  :root {
+    --background: 222 47% 7%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 189 100% 62%;
+    --primary-foreground: 222 47% 7%;
+
+    --secondary: 256 100% 68%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 222 30% 15%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 330 81% 60%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 222 30% 18%;
+    --input: 222 30% 18%;
+    --ring: 189 100% 62%;
+
+    --radius: 0.75rem;
+
+    /* Custom cosmic colors */
+    --space-black: 222 47% 7%;
+    --midnight-blue: 222 47% 11%;
+    --stellar-cyan: 189 100% 62%;
+    --nebula-blue: 189 100% 72%;
+    --cosmic-purple: 256 100% 68%;
+    --deep-space: 270 90% 5%;
+    --midnight-void: 280 85% 7%;
+    --nebula-pink: 330 81% 60%;
+    --galaxy-violet: 271 81% 56%;
+    --star-blue: 217 91% 60%;
+    --supernova-orange: 25 95% 53%;
+    --cosmos-indigo: 239 84% 67%;
+
+    /* Gradients */
+    --gradient-cosmic: linear-gradient(135deg, hsl(var(--cosmic-purple)) 0%, hsl(var(--nebula-pink)) 100%);
+    --gradient-stellar: linear-gradient(135deg, hsl(var(--stellar-cyan)) 0%, hsl(var(--star-blue)) 100%);
+    --gradient-aurora: linear-gradient(135deg, hsl(var(--galaxy-violet)) 0%, hsl(var(--stellar-cyan)) 50%, hsl(var(--nebula-pink)) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(222 47% 12%) 0%, hsl(222 47% 8%) 100%);
+
+    /* Shadows */
+    --glow-cyan: 0 0 20px hsl(189 100% 62% / 0.3), 0 0 40px hsl(189 100% 62% / 0.1);
+    --glow-purple: 0 0 20px hsl(256 100% 68% / 0.3), 0 0 40px hsl(256 100% 68% / 0.1);
+    --glow-pink: 0 0 20px hsl(330 81% 60% / 0.3), 0 0 40px hsl(330 81% 60% / 0.1);
+  }
+
+  .dark {
+    --background: 222 47% 7%;
+    --foreground: 210 40% 98%;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-xl rounded-xl;
+    background: linear-gradient(180deg, hsl(222 47% 12% / 0.8) 0%, hsl(222 47% 8% / 0.9) 100%);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .glow-border {
+    @apply relative;
+  }
+
+  .glow-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, hsl(var(--stellar-cyan)) 0%, hsl(var(--cosmic-purple)) 100%);
+    padding: 1px;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+  }
+
+  .glow-border:hover::before {
+    @apply opacity-100;
+  }
+
+  .stat-card {
+    @apply glass-card p-6 transition-all duration-300 hover:scale-[1.02];
+  }
+
+  .stat-card:hover {
+    box-shadow: var(--glow-cyan);
+  }
+
+  .badge-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .text-gradient-cosmic {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--stellar-cyan)) 0%, hsl(var(--cosmic-purple)) 50%, hsl(var(--nebula-pink)) 100%);
+  }
+
+  .text-gradient-stellar {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(90deg, hsl(var(--stellar-cyan)) 0%, hsl(var(--nebula-blue)) 100%);
+  }
+
+  .countdown-digit {
+    @apply glass-card px-3 py-2 md:px-4 md:py-3 text-2xl md:text-4xl font-bold tabular-nums;
+    color: #e5e7eb;
+    text-shadow: 0 0 20px hsl(var(--stellar-cyan) / 0.5);
+  }
+
+  .star {
+    @apply absolute rounded-full;
+    background: rgba(255, 255, 255, 0.8);
+    animation: twinkle 3s ease-in-out infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 10px hsl(var(--cosmic-purple) / 0.5), 0 0 20px hsl(var(--nebula-pink) / 0.3); }
+    50% { box-shadow: 0 0 25px hsl(var(--cosmic-purple) / 0.8), 0 0 40px hsl(var(--nebula-pink) / 0.5); }
+  }
+}

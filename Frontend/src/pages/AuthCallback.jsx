@@ -76,7 +76,42 @@ const AuthCallback = () => {
             localStorage.setItem('auth_notice', result.data.mentorRequestNote)
           }
           
-          // Redirect based on user role
+          // Handle admin login attempt
+          if (intendedRole === 'admin') {
+            if (result.data.user.role !== 'Admin') {
+              // User tried admin login but is not an admin
+              setError(`Access Denied: You are logged in as "${result.data.user.role}". Only Administrators can access the admin panel.`)
+              setLoading(false)
+              setTimeout(() => navigate('/admin'), 3000)
+              return
+            }
+            // Admin user - go to admin panel
+            navigate('/admin')
+            return
+          }
+          
+          // Handle mentor login attempt
+          if (intendedRole === 'mentor') {
+            if (result.data.user.role === 'Contributor') {
+              // Contributor tried mentor login
+              setError('Access Denied: You are not authorized as a Mentor. Please use "Continue with GitHub" for contributor login.')
+              setLoading(false)
+              setTimeout(() => navigate('/login'), 3000)
+              return
+            }
+          }
+          
+          // Handle contributor login attempt by mentor/admin
+          if (intendedRole === 'contributor') {
+            if (result.data.user.role === 'Mentor' || result.data.user.role === 'Admin') {
+              // Mentor/Admin tried contributor login - that's fine, redirect to their dashboard
+              const redirectUrl = result.data.user.role === 'Admin' ? '/admin' : '/mentor/dashboard'
+              navigate(redirectUrl)
+              return
+            }
+          }
+          
+          // Default redirect based on user role
           const redirectUrl = result.data.redirectUrl || '/dashboard'
           navigate(redirectUrl)
         } else {

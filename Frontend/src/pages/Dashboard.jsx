@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { signOut } from '../lib/supabase'
 import { useLeaderboard, useBadges } from '../hooks/useApi'
 import Starfield from '../components/Starfield'
+import { ArrowLeft, LoaderCircle } from 'lucide-react'
 
 const Dashboard = () => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [signOutLoading, setSignOutLoading] = useState(false)
+  const [signOutError, setSignOutError] = useState(null)
   const navigate = useNavigate()
-  
+
   // Fetch leaderboard data
   const { data: leaderboardData, isLoading: leaderboardLoading } = useLeaderboard(1, 100)
   // Fetch badges
@@ -24,7 +27,7 @@ const Dashboard = () => {
   // Get user's badges
   const getUserBadges = () => {
     if (!user?.badges || !badgesData?.badges) return []
-    return badgesData.badges.filter(badge => 
+    return badgesData.badges.filter(badge =>
       user.badges.includes(badge._id)
     )
   }
@@ -33,7 +36,7 @@ const Dashboard = () => {
     // Get user from localStorage
     const userData = localStorage.getItem('user')
     const accessToken = localStorage.getItem('access_token')
-    
+
     if (userData && accessToken) {
       try {
         const parsedUser = JSON.parse(userData)
@@ -47,7 +50,7 @@ const Dashboard = () => {
         console.error('Error parsing user data:', err)
       }
     }
-    
+
     // Clear invalid data and redirect to login
     localStorage.removeItem('user')
     localStorage.removeItem('access_token')
@@ -57,12 +60,16 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     try {
+      setSignOutLoading(true)
       await signOut()
       localStorage.removeItem('user')
       localStorage.removeItem('access_token')
       navigate('/login')
     } catch (error) {
       console.error('Logout error:', error)
+      setSignOutError(error.message || 'Logout error')
+    } finally {
+      setSignOutLoading(false)
     }
   }
 
@@ -84,20 +91,38 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen relative bg-gradient-to-br from-space-black via-midnight-blue to-space-black">
       <Starfield />
-      
+      {signOutError && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 border border-white/10 rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold text-white mb-2">Error</h3>
+            <p className="text-red-400 mb-4">{signOutError}</p>
+            <button
+              onClick={() => setSignOutError(null)}
+              className="w-full bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
       <div className="relative z-10">
         {/* Header */}
         <header className="bg-white/5 backdrop-blur-lg border-b border-white/10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
-              <div className="flex items-center space-x-4">
+              <div>
+                <button className="p-2 bg-white/10 rounded-lg hover:bg-white/20" onClick={() => navigate("/")}>
+                  <ArrowLeft className="text-white" />
+                </button>
+              </div>
+              <div className="flex flex-row-reverse gap-3 space-x-4 w-full justify-between pr-3 items-center">
                 <img
                   src={user.avatar_url}
                   alt={user.fullName}
                   className="w-10 h-10 rounded-full border-2 border-stellar-cyan"
                 />
                 <div>
-                  <h1 className="text-xl font-bold text-white">
+                  <h1 className="text-md md:text-xl font-bold text-white">
                     Welcome, {user.fullName}
                   </h1>
                   <p className="text-gray-300 text-sm">
@@ -105,12 +130,12 @@ const Dashboard = () => {
                   </p>
                 </div>
               </div>
-              
+
               <button
                 onClick={handleLogout}
                 className="bg-red-500/20 hover:bg-red-500/30 text-red-300 px-4 py-2 rounded-lg transition-colors duration-200"
               >
-                Logout
+                {signOutLoading ? <LoaderCircle className='animate-spin' /> : 'Logout'}
               </button>
             </div>
           </div>
@@ -198,17 +223,26 @@ const Dashboard = () => {
           <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl p-6">
             <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="bg-stellar-cyan/20 hover:bg-stellar-cyan/30 text-stellar-cyan border border-stellar-cyan/30 rounded-lg p-4 text-left transition-colors duration-200">
+              <button 
+                onClick={() => navigate('/projects')}
+                className="bg-stellar-cyan/20 hover:bg-stellar-cyan/30 text-stellar-cyan border border-stellar-cyan/30 rounded-lg p-4 text-left transition-colors duration-200"
+              >
                 <h3 className="font-medium mb-2">Submit PR</h3>
                 <p className="text-sm opacity-80">Submit a new pull request for validation</p>
               </button>
               
-              <button className="bg-nebula-blue/20 hover:bg-nebula-blue/30 text-nebula-blue border border-nebula-blue/30 rounded-lg p-4 text-left transition-colors duration-200">
+              <button 
+                onClick={() => navigate('/projects')}
+                className="bg-nebula-blue/20 hover:bg-nebula-blue/30 text-nebula-blue border border-nebula-blue/30 rounded-lg p-4 text-left transition-colors duration-200"
+              >
                 <h3 className="font-medium mb-2">View Projects</h3>
                 <p className="text-sm opacity-80">Browse available projects to contribute</p>
               </button>
               
-              <button className="bg-cosmic-purple/20 hover:bg-cosmic-purple/30 text-cosmic-purple border border-cosmic-purple/30 rounded-lg p-4 text-left transition-colors duration-200">
+              <button 
+                onClick={() => navigate('/rewards')}
+                className="bg-cosmic-purple/20 hover:bg-cosmic-purple/30 text-cosmic-purple border border-cosmic-purple/30 rounded-lg p-4 text-left transition-colors duration-200"
+              >
                 <h3 className="font-medium mb-2">Leaderboard</h3>
                 <p className="text-sm opacity-80">Check your ranking among contributors</p>
               </button>

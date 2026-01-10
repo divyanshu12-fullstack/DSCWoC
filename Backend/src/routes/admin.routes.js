@@ -30,6 +30,10 @@ import {
   deleteContact,
   getContactStats
 } from '../controllers/contact.controller.js';
+import {
+  importProjects,
+  getImportTemplate
+} from '../controllers/import.controller.js';
 
 const router = express.Router();
 
@@ -38,6 +42,10 @@ router.use(authenticate, requireAdmin);
 
 // ==================== OVERVIEW / MISSION CONTROL ====================
 router.get('/overview', getOverview);
+
+// ==================== IMPORT FROM SHEET ====================
+router.post('/import/projects', importProjects);
+router.get('/import/template', getImportTemplate);
 
 // ==================== USER MANAGEMENT ====================
 router.get('/users', getAllUsers);

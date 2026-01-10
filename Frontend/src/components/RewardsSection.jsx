@@ -250,7 +250,7 @@ const RewardsSection = () => {
           y: 40,
           duration: 0.8,
           delay: 0.4 + index * 0.15,
-          force3D: true,
+          force3D: true // removed extra force3D which was causing jank
         });
       }
     });

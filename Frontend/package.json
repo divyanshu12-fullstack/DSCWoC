@@ -14,6 +14,7 @@
     "@splinetool/runtime": "^1.12.28",
     "@supabase/supabase-js": "^2.89.0",
     "@tanstack/react-query": "^5.90.15",
+    "date-fns": "^4.1.0",
     "gsap": "^3.14.2",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",

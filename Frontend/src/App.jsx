@@ -22,6 +22,7 @@ import Contact from './pages/Contact';
 import FAQ from './pages/FAQ';
 import About from './pages/About';
 import Rewards from './pages/Rewards';
+import UsersDashboard from './pages/UsersDashboard.jsx';
 import Leaderboard from './pages/Leaderboard/Leaderboard';
 import Projects from './pages/Projects';
 
@@ -163,6 +164,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/userdashboard" element={<UsersDashboard />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/mentor/dashboard" element={<Dashboard />} />
         <Route path="/about" element={<About />} />

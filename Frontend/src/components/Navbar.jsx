@@ -33,6 +33,7 @@ const Navbar = () => {
     { name: 'About', href: '/about', isRoute: true },
     { name: 'Timeline', href: '#timeline' },
     { name: 'Projects', href: '/projects', isRoute: true },
+    { name: 'Leaderboard', href: '/leaderboard', isRoute: true },
     { name: 'Rewards', href: '/rewards', isRoute: true },
     { name: 'FAQ', href: '/faq', isRoute: true },
     { name: 'Contact', href: '/contact', isRoute: true }
