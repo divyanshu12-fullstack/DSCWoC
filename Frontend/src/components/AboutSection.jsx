@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -146,41 +147,108 @@ const AboutSection = () => {
 
   return (
     <section id="about" className="relative py-32 px-6" style={{ perspective: '1500px' }}>
-      {/* Mobile-only HUD bar */}
-      <div className="md:hidden max-w-3xl mx-auto mb-16 px-3">
-        <div className="text-center mb-4">
-          <h2 className="text-3xl font-bold text-white mb-1">Mission Briefing</h2>
-          <p className="text-xs text-cyan-300">Storm-ready intel · No fluff</p>
+      {/* Mobile-only view */}
+      <div className="md:hidden max-w-3xl mx-auto px-3">
+        {/* About Section - Mission Briefing */}
+        <div className="mb-16">
+          <div className="text-center mb-4">
+            <h2 className="text-3xl font-bold text-white mb-1">Mission Briefing</h2>
+            <p className="text-xs text-cyan-300">Your 4-week journey into open-source</p>
+          </div>
+
+          <div className="w-full rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-[#0a0f1c] via-[#0f172a] to-[#0b1323] p-5 shadow-xl shadow-cyan-500/20 space-y-4 relative overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 20% 20%, rgba(34,211,238,0.08), transparent 35%), radial-gradient(circle at 80% 0%, rgba(139,92,246,0.08), transparent 30%)' }}></div>
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"></div>
+            
+            {/* Intro Text */}
+            <div className="relative">
+              <p className="text-sm text-slate-200 leading-relaxed">DSC Winter of Code is an intensive 4-week program designed to introduce students to open-source development. Learn real-world skills, contribute to meaningful projects, and grow as a developer.</p>
+            </div>
+
+            {/* What You'll Learn */}
+            <div className="relative pt-2 border-t border-cyan-400/20">
+              <p className="text-[11px] uppercase tracking-[0.15em] text-cyan-300 font-semibold mb-3">What You Get</p>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2 text-xs">
+                  <span className="text-nebula-pink font-bold mt-0.5">📚</span>
+                  <span className="text-slate-200"><span className="font-semibold">Learn Open Source:</span> Master Git, GitHub workflows, and collaborative development</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs">
+                  <span className="text-cosmic-purple font-bold mt-0.5">🔨</span>
+                  <span className="text-slate-200"><span className="font-semibold">Build Real Projects:</span> Contribute to production-grade repositories that matter</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs">
+                  <span className="text-galaxy-violet font-bold mt-0.5">👨‍🏫</span>
+                  <span className="text-slate-200"><span className="font-semibold">Expert Mentorship:</span> Get guidance from experienced developers throughout</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs">
+                  <span className="text-emerald-400 font-bold mt-0.5">🏆</span>
+                  <span className="text-slate-200"><span className="font-semibold">Earn Recognition:</span> Certificates, badges, and portfolio-building opportunities</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Learning Outcomes Grid */}
+            <div className="grid grid-cols-2 gap-2 relative pt-2 border-t border-cyan-400/20">
+              <div className="p-3 rounded-lg bg-slate-900/80 border border-nebula-pink/40 text-xs">
+                <p className="text-nebula-pink text-sm font-bold mb-1">📚</p>
+                <p className="font-semibold text-white text-xs">Open Source Mastery</p>
+              </div>
+              <div className="p-3 rounded-lg bg-slate-900/80 border border-cosmic-purple/40 text-xs">
+                <p className="text-cosmic-purple text-sm font-bold mb-1">🔨</p>
+                <p className="font-semibold text-white text-xs">Real-World Coding</p>
+              </div>
+              <div className="p-3 rounded-lg bg-slate-900/80 border border-galaxy-violet/40 text-xs">
+                <p className="text-galaxy-violet text-sm font-bold mb-1">👨‍🏫</p>
+                <p className="font-semibold text-white text-xs">Expert Guidance</p>
+              </div>
+              <div className="p-3 rounded-lg bg-slate-900/80 border border-emerald-400/40 text-xs">
+                <p className="text-emerald-400 text-sm font-bold mb-1">🏆</p>
+                <p className="font-semibold text-white text-xs">Portfolio Growth</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="w-full rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-[#0a0f1c] via-[#0f172a] to-[#0b1323] p-5 shadow-xl shadow-cyan-500/20 space-y-5 relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 20% 20%, rgba(34,211,238,0.08), transparent 35%), radial-gradient(circle at 80% 0%, rgba(139,92,246,0.08), transparent 30%)' }}></div>
-          <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"></div>
-          <div className="relative flex items-start gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-lg shadow-inner shadow-black/40">🛰️</div>
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.25em] text-cyan-300 font-semibold">Stormbrief</p>
-              <h3 className="text-lg font-semibold text-white leading-tight">Clear, tactical, launch-ready</h3>
-              <p className="text-sm text-slate-200 mt-1">4 weeks. 10 phases. Mentors on call. Support channel live. You focus on shipping.</p>
+        {/* Mobile OUR VISION Section */}
+        <div className="pt-12 border-t border-cosmic-purple/20">
+          <h2 className="text-2xl font-bold text-white text-center mb-8">OUR VISION</h2>
+
+          {/* Stat cards - Mobile optimized */}
+          <div className="space-y-3 mb-10">
+            <div className="p-4 rounded-lg border border-cosmic-purple/40 bg-slate-900/50 backdrop-blur-sm">
+              <div className="text-xl font-bold text-cosmic-purple mb-1">4 Weeks</div>
+              <p className="text-xs text-gray-400">Intensive hands-on learning journey with expert guidance</p>
+            </div>
+            <div className="p-4 rounded-lg border border-galaxy-violet/40 bg-slate-900/50 backdrop-blur-sm">
+              <div className="text-xl font-bold text-galaxy-violet mb-1">100+</div>
+              <p className="text-xs text-gray-400">Students contributing to real open-source projects</p>
+            </div>
+            <div className="p-4 rounded-lg border border-nebula-pink/40 bg-slate-900/50 backdrop-blur-sm">
+              <div className="text-xl font-bold text-nebula-pink mb-1">∞ Impact</div>
+              <p className="text-xs text-gray-400">Build lasting skills and develop community connections</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 relative">
-            {mobileInsights.map((insight) => (
-              <div
-                key={insight.label}
-                className={`p-3 rounded-xl bg-slate-900/80 border border-white/10 text-sm text-white shadow-lg shadow-cyan-500/15 relative overflow-hidden`}
-              >
-                <div className="absolute inset-0 opacity-40" style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(34,211,238,0.08))' }}></div>
-                <div className={`absolute left-0 top-0 h-full w-1 ${insight.accent}`}></div>
-                <p className="text-[11px] text-cyan-100/80 mb-1 relative">{insight.label}</p>
-                <p className="font-semibold relative">{insight.value}</p>
-              </div>
-            ))}
-          </div>
+          {/* Vision Content */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-2">Empower & Inspire</h3>
+              <p className="text-gray-300 leading-relaxed text-sm mb-2">We envision a thriving community where student developers master open-source, build impactful projects, and grow under expert mentorship.</p>
+              <p className="text-gray-400 text-xs leading-relaxed">Every contribution matters. From your first pull request to shipping production code, we guide you every step. Collaborate with peers, learn from veterans, and build something that makes a difference.</p>
+            </div>
 
-          <div className="text-xs text-slate-200 leading-relaxed relative">
-            Storm-check complete: join the mission, sync with mentors, and push your first PR before final orbit.
+            {/* Info card */}
+            <div className="p-4 rounded-lg border border-cosmic-purple/40 bg-slate-900/50 backdrop-blur-sm mt-6">
+              <p className="text-gray-200 text-xs leading-relaxed"><span className="font-semibold text-cosmic-purple">DataScience Club VIT Bhopal</span> drives innovation through community initiatives like DSC Winter of Code, empowering the next generation of developers.</p>
+            </div>
+
+            {/* Guidelines CTA */}
+            <div className="mt-8 pt-6 border-t border-cosmic-purple/20">
+              <Link to="/guidelines" className="w-full inline-block px-6 py-3 text-center text-sm font-semibold text-white rounded-lg bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-cosmic-purple/80 hover:to-nebula-pink/80 transition-all duration-300 shadow-lg hover:shadow-cosmic-purple/50 border border-cosmic-purple/60">
+                📋 View Participation Guidelines
+              </Link>
+            </div>
           </div>
         </div>
       </div>

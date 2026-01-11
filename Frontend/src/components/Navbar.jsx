@@ -31,6 +31,7 @@ const Navbar = () => {
   const navItems = [
     { name: 'Home', href: '#home' },
     { name: 'About', href: '/about', isRoute: true },
+    { name: 'Guidelines', href: '/guidelines', isRoute: true },
     { name: 'Timeline', href: '#timeline' },
     { name: 'Projects', href: '/projects', isRoute: true },
     { name: 'Leaderboard', href: '/leaderboard', isRoute: true },
