@@ -31,8 +31,8 @@ const BenefitsSection = () => {
       };
     });
 
-  const mobileStars = buildStars(20, 0.2, 0.5);
-  const desktopStars = buildStars(30, 0.3, 0.7);
+  const mobileStars = buildStars(18, 0.2, 0.45);
+  const desktopStars = buildStars(18, 0.25, 0.6);
 
   const benefits = [
     {
@@ -330,10 +330,12 @@ const BenefitsSection = () => {
                 ref={el => cardRefs.current[index] = el}
                 className="relative glass-effect rounded-3xl p-6 md:p-8 h-full group cursor-pointer overflow-hidden"
                 style={{
-                  background: 'rgba(17, 24, 39, 0.7)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.88), rgba(17, 24, 39, 0.65))',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  boxShadow: '0 25px 60px rgba(5, 5, 15, 0.45)',
+                  backdropFilter: 'none',
                   opacity: 1,
+                  willChange: 'transform',
                 }}
               >
                 {/* Gradient overlay */}

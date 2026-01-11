@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const readStoredUser = () => {
+  try {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.warn('Failed to parse stored user data', error);
+    return null;
+  }
+};
+
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [shrinkProgress, setShrinkProgress] = useState(0); // 0 -> not scrolled, 1 -> fully shrunk
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => readStoredUser());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,14 +28,20 @@ const Navbar = () => {
       setScrolled(y > start);
     };
 
-    // Check if user is logged in
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
+    const handleStorage = (event) => {
+      if (event.key === 'user') {
+        setUser(event.newValue ? JSON.parse(event.newValue) : null);
+      }
+    };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('storage', handleStorage);
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   const navItems = [
@@ -71,7 +87,7 @@ const Navbar = () => {
     } else {
       document.documentElement.style.overflow = 'auto';
     }
-    
+
     return () => {
       document.documentElement.style.overflow = 'auto';
     };
@@ -97,11 +113,10 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
           ? 'glass-effect shadow-lg shadow-cosmic-purple/10'
           : 'bg-transparent'
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between">
         {/* Logo - Responsive sizing with Tailwind */}
@@ -187,7 +202,7 @@ const Navbar = () => {
         <>
           {/* Overlay to prevent body scroll */}
           <div className="fixed inset-0 bg-black/50 md:hidden" style={{ top: '64px', zIndex: 40 }} />
-          
+
           <div className="md:hidden glass-effect border-t border-cosmic-purple/20 absolute top-full left-0 right-0 w-screen" style={{ zIndex: 45 }}>
             <div className="px-4 py-4 space-y-3">
               {navItems.map((item) => (
@@ -199,7 +214,7 @@ const Navbar = () => {
                   {item.name}
                 </button>
               ))}
-              
+
               {user ? (
                 <div className="pt-3 border-t border-white/10">
                   <div className="flex items-center space-x-3 mb-3">
