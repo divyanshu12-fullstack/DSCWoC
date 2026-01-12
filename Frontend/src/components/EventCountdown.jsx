@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react';
 
 /**
  * EventCountdown
@@ -19,33 +19,33 @@ import { useEffect, useMemo, useState } from 'react'
 export default function EventCountdown({
   targetTime
 }) {
-  const target = useMemo(() => new Date(targetTime).getTime(), [targetTime])
-  const [now, setNow] = useState(() => Date.now())
+  const target = useMemo(() => new Date(targetTime).getTime(), [targetTime]);
+  const [now, setNow] = useState(() => Date.now());
 
   /* -------------------- TIMER LOOP (1s) -------------------- */
   useEffect(() => {
     const interval = setInterval(() => {
-      setNow(Date.now())
-    }, 1000)
+      setNow(Date.now());
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   /* -------------------- TIME CALC -------------------- */
-  const timeLeft = Math.max(target - now, 0)
+  const timeLeft = Math.max(target - now, 0);
 
   const time = useMemo(() => {
-    const totalSeconds = Math.floor(timeLeft / 1000)
+    const totalSeconds = Math.floor(timeLeft / 1000);
 
-    const days = Math.floor(totalSeconds / 86400)
-    const hours = Math.floor((totalSeconds % 86400) / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = totalSeconds % 60
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
 
-    return { days, hours, minutes, seconds }
-  }, [timeLeft])
+    return { days, hours, minutes, seconds };
+  }, [timeLeft]);
 
-  const isOver = timeLeft <= 0
+  const isOver = timeLeft <= 0;
 
   /* -------------------- RENDER -------------------- */
   return (
@@ -65,14 +65,12 @@ export default function EventCountdown({
           </div>
         ) : (
           <div className="text-center">
-            <p className="text-2xl font-bold text-stellar-cyan animate-glow  py-6 rounded-2xl">
-              Event Live 🚀
-            </p>
+
           </div>
         )}
       </div>
     </section>
-  )
+  );
 }
 
 /* -------------------- SUB COMPONENT -------------------- */
@@ -96,5 +94,5 @@ const TimeBlock = ({ label, value, pulse = false }) => {
         {label}
       </span>
     </div>
-  )
-}
+  );
+};

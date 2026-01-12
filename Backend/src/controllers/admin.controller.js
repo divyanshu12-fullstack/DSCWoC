@@ -185,10 +185,10 @@ export const updateUserRole = async (req, res) => {
     await user.save();
 
     // Log the action
-    logger.info(`Admin ${req.user.username} changed role of ${user.username} from ${oldRole} to ${role}. Reason: ${reason || 'N/A'}`);
+    logger.info(`Admin ${req.user.github_username} changed role of ${user.github_username} from ${oldRole} to ${role}. Reason: ${reason || 'N/A'}`);
 
     res.json(successResponse(
-      { user: { id: user._id, username: user.username, role: user.role } },
+      { user: { id: user._id, username: user.github_username, role: user.role } },
       'User role updated successfully'
     ));
 
@@ -219,10 +219,10 @@ export const updateUserStatus = async (req, res) => {
     user.isActive = isActive;
     await user.save();
 
-    logger.info(`Admin ${req.user.username} ${isActive ? 'activated' : 'deactivated'} user ${user.username}. Reason: ${reason || 'N/A'}`);
+    logger.info(`Admin ${req.user.github_username} ${isActive ? 'activated' : 'deactivated'} user ${user.github_username}. Reason: ${reason || 'N/A'}`);
 
     res.json(successResponse(
-      { user: { id: user._id, username: user.username, isActive: user.isActive } },
+      { user: { id: user._id, username: user.github_username, isActive: user.isActive } },
       `User ${isActive ? 'activated' : 'deactivated'} successfully`
     ));
 
@@ -256,19 +256,20 @@ export const adjustUserPoints = async (req, res) => {
       );
     }
 
-    const oldPoints = user.totalPoints;
-    user.totalPoints = Math.max(0, user.totalPoints + points);
+    const oldPoints = user.stats?.points || 0;
+    user.stats.bonusPoints = Math.max(0, (user.stats?.bonusPoints || 0) + points);
+    user.stats.points = Math.max(0, (user.stats?.prPoints || 0) + user.stats.bonusPoints);
     await user.save();
 
-    logger.warn(`Admin ${req.user.username} adjusted points for ${user.username} from ${oldPoints} to ${user.totalPoints}. Change: ${points}. Reason: ${reason}`);
+    logger.warn(`Admin ${req.user.github_username} adjusted points for ${user.github_username} from ${oldPoints} to ${user.stats.points}. Change: ${points}. Reason: ${reason}`);
 
     res.json(successResponse(
       { 
         user: { 
           id: user._id, 
-          username: user.username, 
+          username: user.github_username,
           oldPoints, 
-          newPoints: user.totalPoints,
+          newPoints: user.stats.points,
           change: points
         } 
       },
@@ -298,13 +299,13 @@ export const getUserPRHistory = async (req, res) => {
       );
     }
 
-    const prs = await PullRequest.find({ contributor: id })
-      .populate('project', 'name repoLink')
+    const prs = await PullRequest.find({ user: id })
+      .populate('project', 'name github_url github_owner github_repo')
       .sort({ createdAt: -1 })
       .lean();
 
     res.json(successResponse(
-      { user: { username: user.username, fullName: user.fullName }, prs },
+      { user: { username: user.github_username, fullName: user.fullName }, prs },
       'User PR history fetched successfully'
     ));
 
@@ -409,7 +410,7 @@ export const createProject = async (req, res) => {
 
     await project.save();
 
-    logger.info(`Admin ${req.user.username} created project: ${name}`);
+    logger.info(`Admin ${req.user.github_username} created project: ${name}`);
 
     res.status(HTTP_STATUS.CREATED).json(successResponse(
       { project },
@@ -445,7 +446,7 @@ export const updateProject = async (req, res) => {
       );
     }
 
-    logger.info(`Admin ${req.user.username} updated project: ${project.name}`);
+    logger.info(`Admin ${req.user.github_username} updated project: ${project.name}`);
 
     res.json(successResponse(
       { project },
@@ -488,7 +489,7 @@ export const assignMentor = async (req, res) => {
       );
     }
 
-    logger.info(`Admin ${req.user.username} assigned mentor ${mentor.username} to project ${project.name}`);
+    logger.info(`Admin ${req.user.github_username} assigned mentor ${mentor.github_username} to project ${project.name}`);
 
     res.json(successResponse(
       { project },
@@ -522,7 +523,7 @@ export const toggleProjectStatus = async (req, res) => {
     project.isActive = isActive;
     await project.save();
 
-    logger.info(`Admin ${req.user.username} ${isActive ? 'activated' : 'deactivated'} project ${project.name}. Reason: ${reason || 'N/A'}`);
+    logger.info(`Admin ${req.user.github_username} ${isActive ? 'activated' : 'deactivated'} project ${project.name}. Reason: ${reason || 'N/A'}`);
 
     res.json(successResponse(
       { project: { id: project._id, name: project.name, isActive: project.isActive } },
@@ -576,7 +577,7 @@ export const getAllPRs = async (req, res) => {
       prNumber: pr.github_pr_number,
       title: pr.title,
       prLink: pr.github_url,
-      status: pr.status,
+      status: pr.status === 'merged' ? 'Merged' : pr.status === 'open' ? 'Pending' : 'Rejected',
       pointsAwarded: pr.points || 0,
       contributor: pr.user ? { username: pr.user.github_username } : null,
       project: pr.project ? { name: pr.project.name } : null,
@@ -615,8 +616,7 @@ export const updatePRStatus = async (req, res) => {
       );
     }
 
-    const pr = await PullRequest.findById(id)
-      .populate('contributor', 'username totalPoints');
+    const pr = await PullRequest.findById(id);
 
     if (!pr) {
       return res.status(HTTP_STATUS.NOT_FOUND).json(
@@ -626,22 +626,41 @@ export const updatePRStatus = async (req, res) => {
 
     const oldStatus = pr.status;
 
-    // If rejecting a previously merged PR, deduct points
-    if (oldStatus === 'Merged' && status === 'Rejected' && pr.pointsAwarded > 0) {
-      const contributor = pr.contributor;
-      contributor.totalPoints = Math.max(0, contributor.totalPoints - pr.pointsAwarded);
-      await contributor.save();
-      logger.warn(`Admin ${req.user.username} rejected PR and deducted ${pr.pointsAwarded} points from ${contributor.username}`);
+    // Map legacy admin statuses to our PR/validation model
+    if (status === 'Merged') {
+      pr.status = 'merged';
+      pr.validation.isValidated = true;
+      pr.validation.validationStatus = 'approved';
+      pr.validation.validatedBy = req.user._id;
+      pr.validation.validatedAt = new Date();
+      if (adminNote) pr.validation.validationNotes = adminNote;
+    } else if (status === 'Pending') {
+      pr.status = 'open';
+      if (adminNote) pr.validation.validationNotes = adminNote;
+    } else if (status === 'Rejected') {
+      pr.status = 'closed';
+      pr.validation.isValidated = true;
+      pr.validation.validationStatus = 'rejected';
+      pr.validation.validatedBy = req.user._id;
+      pr.validation.validatedAt = new Date();
+      pr.validation.validationNotes = adminNote || reason || 'Rejected by admin';
     }
 
-    pr.status = status;
-    if (adminNote) pr.adminNote = adminNote;
+    pr.calculatePoints();
     await pr.save();
 
-    logger.info(`Admin ${req.user.username} changed PR #${pr.prNumber} status from ${oldStatus} to ${status}. Reason: ${reason || 'N/A'}`);
+    // Update user stats
+    const userDoc = await User.findById(pr.user);
+    if (userDoc) {
+      await userDoc.updateStats();
+      await Badge.checkAndAwardBadges(userDoc._id);
+    }
+    await User.updateRanks();
+
+    logger.info(`Admin ${req.user.github_username} changed PR #${pr.github_pr_number} status from ${oldStatus} to ${pr.status}. Reason: ${reason || 'N/A'}`);
 
     res.json(successResponse(
-      { pr: { id: pr._id, prNumber: pr.prNumber, status: pr.status } },
+      { pr: { id: pr._id, prNumber: pr.github_pr_number, status: pr.status } },
       'PR status updated successfully'
     ));
 
@@ -668,8 +687,7 @@ export const adjustPRPoints = async (req, res) => {
       );
     }
 
-    const pr = await PullRequest.findById(id)
-      .populate('contributor', 'username totalPoints');
+    const pr = await PullRequest.findById(id);
 
     if (!pr) {
       return res.status(HTTP_STATUS.NOT_FOUND).json(
@@ -677,25 +695,29 @@ export const adjustPRPoints = async (req, res) => {
       );
     }
 
-    const oldPoints = pr.pointsAwarded;
+    const oldPoints = pr.points || 0;
     const pointsDiff = points - oldPoints;
 
-    // Update PR points
-    pr.pointsAwarded = points;
+    // Update PR points (manual override)
+    pr.pointsOverride = points;
+    pr.calculatePoints();
     await pr.save();
 
-    // Update contributor total points
-    const contributor = pr.contributor;
-    contributor.totalPoints = Math.max(0, contributor.totalPoints + pointsDiff);
-    await contributor.save();
+    // Update user stats
+    const userDoc = await User.findById(pr.user);
+    if (userDoc) {
+      await userDoc.updateStats();
+      await Badge.checkAndAwardBadges(userDoc._id);
+    }
+    await User.updateRanks();
 
-    logger.warn(`Admin ${req.user.username} adjusted PR #${pr.prNumber} points from ${oldPoints} to ${points}. Contributor ${contributor.username} points changed by ${pointsDiff}. Reason: ${reason}`);
+    logger.warn(`Admin ${req.user.github_username} adjusted PR #${pr.github_pr_number} points from ${oldPoints} to ${points}. User points changed by ${pointsDiff}. Reason: ${reason}`);
 
     res.json(successResponse(
       { 
         pr: { 
           id: pr._id, 
-          prNumber: pr.prNumber, 
+          prNumber: pr.github_pr_number,
           oldPoints, 
           newPoints: points,
           change: pointsDiff
@@ -729,7 +751,7 @@ export const addPRNote = async (req, res) => {
 
     const pr = await PullRequest.findByIdAndUpdate(
       id,
-      { adminNote: note },
+      { 'validation.validationNotes': note },
       { new: true }
     );
 
@@ -739,10 +761,10 @@ export const addPRNote = async (req, res) => {
       );
     }
 
-    logger.info(`Admin ${req.user.username} added note to PR #${pr.prNumber}`);
+    logger.info(`Admin ${req.user.github_username} added note to PR #${pr.github_pr_number}`);
 
     res.json(successResponse(
-      { pr: { id: pr._id, prNumber: pr.prNumber, adminNote: pr.adminNote } },
+      { pr: { id: pr._id, prNumber: pr.github_pr_number, adminNote: pr.validation?.validationNotes || '' } },
       'Admin note added successfully'
     ));
 
@@ -768,14 +790,16 @@ export const getLeaderboard = async (req, res) => {
     if (track) filter.track = track;
 
     const leaderboard = await User.find(filter)
-      .select('username fullName avatar_url totalPoints track college')
-      .sort({ totalPoints: -1 })
+      .select('github_username fullName avatar_url stats.points stats.totalPRs stats.mergedPRs college')
+      .sort({ 'stats.points': -1, 'stats.totalPRs': -1 })
       .limit(parseInt(limit))
       .lean();
 
     // Add rank
     const rankedLeaderboard = leaderboard.map((user, index) => ({
       ...user,
+      username: user.github_username,
+      totalPoints: user.stats?.points || 0,
       rank: index + 1
     }));
 
@@ -802,21 +826,16 @@ export const recalculatePoints = async (req, res) => {
 
     let updatedCount = 0;
     for (const user of users) {
-      const prs = await PullRequest.find({ 
-        contributor: user._id, 
-        status: 'Merged' 
-      });
-
-      const totalPoints = prs.reduce((sum, pr) => sum + (pr.pointsAwarded || 0), 0);
-      
-      if (user.totalPoints !== totalPoints) {
-        user.totalPoints = totalPoints;
-        await user.save();
-        updatedCount++;
-      }
+      const before = user.stats?.points || 0;
+      await user.updateStats();
+      await Badge.checkAndAwardBadges(user._id);
+      const after = user.stats?.points || 0;
+      if (before !== after) updatedCount++;
     }
 
-    logger.warn(`Admin ${req.user.username} recalculated points for ${updatedCount} users`);
+    await User.updateRanks();
+
+    logger.warn(`Admin ${req.user.github_username} recalculated points for ${updatedCount} users`);
 
     res.json(successResponse(
       { usersUpdated: updatedCount },
@@ -884,20 +903,17 @@ export const assignBadge = async (req, res) => {
       );
     }
 
-    // Check if user already has this badge
-    if (user.badges.includes(badgeId)) {
+    const awarded = await badge.awardToUser(user._id);
+    if (!awarded) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json(
         errorResponse('User already has this badge')
       );
     }
 
-    user.badges.push(badgeId);
-    await user.save();
-
-    logger.info(`Admin ${req.user.username} assigned badge "${badge.name}" to ${user.username}. Reason: ${reason || 'N/A'}`);
+    logger.info(`Admin ${req.user.github_username} assigned badge "${badge.name}" to ${user.github_username}. Reason: ${reason || 'N/A'}`);
 
     res.json(successResponse(
-      { user: { username: user.username }, badge: { name: badge.name } },
+      { user: { username: user.github_username }, badge: { name: badge.name } },
       'Badge assigned successfully'
     ));
 
@@ -924,11 +940,17 @@ export const exportUsers = async (req, res) => {
     if (track) filter.track = track;
 
     const users = await User.find(filter)
-      .select('username fullName email github_id role track college totalPoints isActive createdAt')
+      .select('github_username fullName email github_id role track college stats.points isActive createdAt')
       .lean();
 
+    const exportedUsers = users.map((u) => ({
+      ...u,
+      username: u.github_username,
+      totalPoints: u.stats?.points || 0,
+    }));
+
     res.json(successResponse(
-      { users, count: users.length },
+      { users: exportedUsers, count: exportedUsers.length },
       'Users data exported successfully'
     ));
 
@@ -947,13 +969,22 @@ export const exportUsers = async (req, res) => {
 export const exportPRs = async (req, res) => {
   try {
     const prs = await PullRequest.find()
-      .populate('contributor', 'username fullName')
+      .populate('user', 'github_username fullName')
       .populate('project', 'name')
-      .select('prNumber title prLink status pointsAwarded mergedAt createdAt')
+      .select('github_pr_number title github_url status points pointsOverride github_data.merged_at github_data.created_at createdAt')
       .lean();
 
+    const exportedPRs = prs.map((pr) => ({
+      ...pr,
+      prNumber: pr.github_pr_number,
+      prLink: pr.github_url,
+      pointsAwarded: pr.points || 0,
+      contributor: pr.user,
+      mergedAt: pr.github_data?.merged_at,
+    }));
+
     res.json(successResponse(
-      { prs, count: prs.length },
+      { prs: exportedPRs, count: exportedPRs.length },
       'PRs data exported successfully'
     ));
 
@@ -977,13 +1008,15 @@ export const exportLeaderboard = async (req, res) => {
     if (track) filter.track = track;
 
     const leaderboard = await User.find(filter)
-      .select('username fullName email totalPoints track college')
-      .sort({ totalPoints: -1 })
+      .select('github_username fullName email stats.points stats.totalPRs track college')
+      .sort({ 'stats.points': -1, 'stats.totalPRs': -1 })
       .lean();
 
     const rankedLeaderboard = leaderboard.map((user, index) => ({
       rank: index + 1,
-      ...user
+      ...user,
+      username: user.github_username,
+      totalPoints: user.stats?.points || 0,
     }));
 
     res.json(successResponse(

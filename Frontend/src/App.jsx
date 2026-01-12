@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense, useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import AboutSection from './components/AboutSection';
@@ -56,21 +56,6 @@ const HeroSkeleton = () => (
 const SectionSkeleton = ({ className = '' }) => (
   <div className={`w-full rounded-2xl bg-white/5 border border-white/10 animate-pulse ${className}`} />
 );
-
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    // Avoid the browser restoring scroll position on reload/back-forward.
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }, [pathname]);
-
-  return null;
-};
 
 // Home component
 const Home = () => {
@@ -159,7 +144,6 @@ const Home = () => {
 function App() {
   return (
     <Router>
-      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

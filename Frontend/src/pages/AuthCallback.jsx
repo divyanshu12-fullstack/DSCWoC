@@ -24,7 +24,10 @@ const AuthCallback = () => {
         }
 
         // Send the session to our backend to create/update user
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+        const rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL
+        const apiUrl = rawApiUrl
+          ? String(rawApiUrl).replace(/\/+$/, '').replace(/\/api(?:\/v1)?$/, '')
+          : 'http://localhost:5000'
         console.log('Calling backend API:', apiUrl)
         
         // Get the intended role from localStorage (set during login)

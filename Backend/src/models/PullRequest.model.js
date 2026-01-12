@@ -72,6 +72,10 @@ const pullRequestSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // Optional manual override for points (e.g., mentor/admin adjustments)
+    pointsOverride: {
+      type: Number,
+    },
     pointsCalculatedAt: {
       type: Date,
     },
@@ -143,35 +147,38 @@ pullRequestSchema.index({ status: 1, 'github_data.merged_at': -1 });
 
 // Instance method to calculate points based on PR complexity
 pullRequestSchema.methods.calculatePoints = function() {
-  let points = 0;
-  
-  // Base points for PR status
-  switch (this.status) {
-    case 'merged':
-      points += 10;
-      break;
-    case 'open':
-      points += 5;
-      break;
-    case 'closed':
-      points += 2;
-      break;
-    default:
-      points += 0;
+  if (typeof this.pointsOverride === 'number' && Number.isFinite(this.pointsOverride) && this.pointsOverride >= 0) {
+    this.points = this.pointsOverride;
+    this.pointsCalculatedAt = new Date();
+    return this.points;
   }
-  
+
+  // Event logic: award points only after a PR is merged AND approved by validation.
+  // This prevents inflating scores from open/closed/unvalidated PRs.
+  const validation = this.validation || {};
+  const isApproved = validation.isValidated && validation.validationStatus === 'approved';
+
+  if (this.status !== 'merged' || !isApproved) {
+    this.points = 0;
+    this.pointsCalculatedAt = new Date();
+    return this.points;
+  }
+
+  let points = 10; // base points for merged + approved
+
   // Bonus points for code complexity
-  const { additions = 0, deletions = 0, changed_files = 0 } = this.github_data;
+  const githubData = this.github_data || {};
+  const additions = githubData.additions || 0;
+  const deletions = githubData.deletions || 0;
+  const changedFiles = githubData.changed_files || 0;
   const totalChanges = additions + deletions;
-  
+
   if (totalChanges > 100) points += 3;
   if (totalChanges > 500) points += 5;
-  if (changed_files > 5) points += 2;
-  
-  // Validation bonus
-  if (this.validation.isValidated && this.validation.validationStatus === 'approved') {
-    points += 5;
-  }
+  if (changedFiles > 5) points += 2;
+
+  // Validation bonus (approved already)
+  points += 5;
   
   this.points = points;
   this.pointsCalculatedAt = new Date();

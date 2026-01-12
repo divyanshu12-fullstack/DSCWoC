@@ -162,13 +162,22 @@ class GitHubService {
             project: project._id
           });
 
+          // Pull request list items don't include additions/deletions/changed_files/commits.
+          // Fetch full PR details so calculatePoints() is accurate.
+          let prDetails = githubPR;
+          try {
+            prDetails = await this.getPullRequest(github_owner, github_repo, githubPR.number);
+          } catch (detailError) {
+            logger.warn(`Falling back to list payload for PR #${githubPR.number}: ${detailError.message}`);
+          }
+
           if (existingPR) {
             // Update existing PR
-            await this.updatePRFromGitHub(existingPR, githubPR);
+            await this.updatePRFromGitHub(existingPR, prDetails);
             syncedCount++;
           } else {
             // Create new PR
-            await this.createPRFromGitHub(githubPR, user._id, project._id);
+            await this.createPRFromGitHub(prDetails, user._id, project._id);
             newPRsCount++;
             syncedCount++;
           }

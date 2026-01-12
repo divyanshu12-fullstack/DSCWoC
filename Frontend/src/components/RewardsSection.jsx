@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -98,7 +98,6 @@ if (typeof window !== 'undefined') {
 
 const RewardsSection = () => {
   const isMobile = useIsMobile();
-  const [mounted, setMounted] = useState(false);
   const sectionRef = useRef(null);
   const titleRef = useRef(null);
   const prizePoolRef = useRef(null);
@@ -160,13 +159,8 @@ const RewardsSection = () => {
   ];
 
   useEffect(() => {
-    // Set mounted state to prevent hydration mismatch
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
     // Desktop animations only
-    if (isMobile || !mounted) return;
+    if (isMobile) return;
 
     // Set initial states for all animated elements
     if (titleRef.current) {
@@ -291,7 +285,7 @@ const RewardsSection = () => {
       // Also kill all GSAP animations
       gsap.killTweensOf('*');
     };
-  }, [isMobile, mounted]);
+  }, [isMobile]);
 
   return (
     <section
@@ -319,7 +313,7 @@ const RewardsSection = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        {!mounted ? null : isMobile ? (
+        {isMobile ? (
           <>
             {/* Mobile Header */}
             <div className="text-center mb-12">

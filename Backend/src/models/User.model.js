@@ -63,6 +63,16 @@ const userSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      // Sum of PullRequest.points for this user
+      prPoints: {
+        type: Number,
+        default: 0,
+      },
+      // Bonus points not derived from PRs (badges, manual adjustments)
+      bonusPoints: {
+        type: Number,
+        default: 0,
+      },
       points: {
         type: Number,
         default: 0,
@@ -110,16 +120,34 @@ userSchema.virtual('pullRequests', {
 // Instance method to update user statistics
 userSchema.methods.updateStats = async function() {
   const PullRequest = mongoose.model('PullRequest');
-  
-  const prs = await PullRequest.find({ user: this._id });
-  const mergedPRs = prs.filter(pr => pr.status === 'merged');
-  
-  this.stats.totalPRs = prs.length;
-  this.stats.mergedPRs = mergedPRs.length;
-  
-  // Points calculation: 10 points per merged PR, 5 points per open PR
-  this.stats.points = (mergedPRs.length * 10) + (prs.length * 5);
-  
+
+  const agg = await PullRequest.aggregate([
+    { $match: { user: this._id } },
+    {
+      $group: {
+        _id: null,
+        totalPRs: { $sum: 1 },
+        mergedPRs: {
+          $sum: { $cond: [{ $eq: ['$status', 'merged'] }, 1, 0] },
+        },
+        prPoints: { $sum: { $ifNull: ['$points', 0] } },
+      },
+    },
+  ]);
+
+  const totalPRs = agg[0]?.totalPRs || 0;
+  const mergedPRs = agg[0]?.mergedPRs || 0;
+  const prPoints = agg[0]?.prPoints || 0;
+
+  // Keep existing bonus points (badges/manual adjustments)
+  const bonusPoints = Math.max(0, this.stats?.bonusPoints || 0);
+
+  this.stats.totalPRs = totalPRs;
+  this.stats.mergedPRs = mergedPRs;
+  this.stats.prPoints = Math.max(0, prPoints);
+  this.stats.bonusPoints = bonusPoints;
+  this.stats.points = Math.max(0, this.stats.prPoints + this.stats.bonusPoints);
+
   await this.save();
   return this.stats;
 };
@@ -127,8 +155,8 @@ userSchema.methods.updateStats = async function() {
 // Static method to update leaderboard ranks
 userSchema.statics.updateRanks = async function() {
   const users = await this.find({ isActive: true })
-    .sort({ 'stats.points': -1 })
-    .select('_id stats.points');
+    .sort({ 'stats.points': -1, 'stats.totalPRs': -1 })
+    .select('_id stats.points stats.totalPRs');
   
   const bulkOps = users.map((user, index) => ({
     updateOne: {

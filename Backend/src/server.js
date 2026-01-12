@@ -9,21 +9,21 @@ import Badge from './models/Badge.model.js';
 import logger from './utils/logger.js';
 
 // Configuration
-const PORT = process.env.PORT || 5001; // Changed to 5001 to avoid conflicts
+const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Connect to MongoDB
 connectDB();
 
 // Initialize default badges (disabled temporarily for testing)
-// Badge.initializeDefaultBadges().catch(err => {
-//   logger.error('Failed to initialize default badges:', err);
-// });
+Badge.initializeDefaultBadges().catch(err => {
+  logger.error('Failed to initialize default badges:', err);
+});
 
 // Start cron jobs (disabled for debugging)
-// if (process.env.NODE_ENV === 'production' || process.env.ENABLE_CRON === 'true') {
-//   cronService.startAllJobs();
-// }
+if (process.env.NODE_ENV === 'production' || process.env.ENABLE_CRON === 'true') {
+  cronService.startAllJobs();
+}
 
 // Start server
 const server = app.listen(PORT, () => {
