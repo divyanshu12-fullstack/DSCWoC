@@ -216,9 +216,9 @@ const Leaderboard = () => {
                                 <span className="countdown-label">Seconds</span>
                             </div>
                         </div>
-                        <a 
-                            href="https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog" 
-                            target="_blank" 
+                        <a
+                            href="https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog"
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="register-btn"
                         >
