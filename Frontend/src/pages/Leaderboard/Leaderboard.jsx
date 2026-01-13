@@ -7,12 +7,14 @@ import LeaderboardSocialLinks from '../../components/Leaderboard/LeaderboardSoci
 import LeaderboardPodium from '../../components/Leaderboard/LeaderboardPodium';
 import './Leaderboard.css';
 import Footer from "../../components/Footer";
+import LaunchCountdown from '../../components/LaunchCountdown';
 
 // Lazy load Starfield for performance
 const Starfield = lazy(() => import('../../components/Starfield'));
 
 // Constants for pagination
 const ITEMS_PER_PAGE = 30;
+const LAUNCH_DATE = new Date('2026-01-16T15:30:00Z'); // 9:00 PM IST
 
 const formatLeaderboardDateTime = (date) => {
     try {
@@ -76,12 +78,11 @@ const Leaderboard = () => {
         isLive: false,
     });
 
-    // Calculate countdown to January 15, 2026
+    // Calculate countdown to launch
     useEffect(() => {
         const calculateCountdown = () => {
-            const launchDate = new Date('2026-01-15T00:00:00Z');
             const now = new Date();
-            const diff = launchDate - now;
+            const diff = LAUNCH_DATE - now;
 
             if (diff <= 0) {
                 setCountdown({
@@ -189,33 +190,17 @@ const Leaderboard = () => {
             {/* Navigation */}
             <Navbar />
 
-            {/* Countdown Timer Overlay - Shows before January 15 */}
+            {/* Countdown Timer Overlay - Shows before launch */}
             {!countdown.isLive && (
                 <div className="countdown-overlay">
                     <div className="countdown-container">
-                        <h2 className="countdown-title">Leaderboard Locked</h2>
-                        <p className="countdown-description">Please wait for the leaderboard to open.</p>
-                        <div className="countdown-timer">
-                            <div className="countdown-unit">
-                                <span className="countdown-value">{String(countdown.days).padStart(2, '0')}</span>
-                                <span className="countdown-label">Days</span>
-                            </div>
-                            <span className="countdown-separator">:</span>
-                            <div className="countdown-unit">
-                                <span className="countdown-value">{String(countdown.hours).padStart(2, '0')}</span>
-                                <span className="countdown-label">Hours</span>
-                            </div>
-                            <span className="countdown-separator">:</span>
-                            <div className="countdown-unit">
-                                <span className="countdown-value">{String(countdown.minutes).padStart(2, '0')}</span>
-                                <span className="countdown-label">Minutes</span>
-                            </div>
-                            <span className="countdown-separator">:</span>
-                            <div className="countdown-unit">
-                                <span className="countdown-value">{String(countdown.seconds).padStart(2, '0')}</span>
-                                <span className="countdown-label">Seconds</span>
-                            </div>
-                        </div>
+                        <LaunchCountdown
+                            target={LAUNCH_DATE}
+                            title="Leaderboard unlocks"
+                            subtitle="DSCWoC points go live at 9:00 PM IST"
+                            pillLabel="Locked"
+                            note="Times shown in your local time zone. The leaderboard unlocks automatically at T0."
+                        />
                         <a
                             href="https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog"
                             target="_blank"
@@ -224,7 +209,7 @@ const Leaderboard = () => {
                         >
                             Register Now
                         </a>
-                        <p className="countdown-subtitle">DSCWoC 2026 Leaderboard Coming Soon</p>
+                        <p className="countdown-subtitle">Goes live on 16 Jan, 9:00 PM IST</p>
                     </div>
                 </div>
             )}
