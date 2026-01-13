@@ -57,6 +57,17 @@ const SectionSkeleton = ({ className = '' }) => (
   <div className={`w-full rounded-2xl bg-white/5 border border-white/10 animate-pulse ${className}`} />
 );
 
+// Scroll to top on route change to avoid stale scroll positions
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+
 // Home component
 const Home = () => {
   const [showStarfield, setShowStarfield] = useState(false);

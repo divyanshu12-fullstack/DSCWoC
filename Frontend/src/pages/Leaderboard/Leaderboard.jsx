@@ -13,6 +13,7 @@ const Starfield = lazy(() => import('../../components/Starfield'));
 
 // Constants for pagination
 const ITEMS_PER_PAGE = 30;
+const LAUNCH_DATE = new Date('2026-01-16T15:30:00Z'); // 9:00 PM IST
 
 const formatLeaderboardDateTime = (date) => {
     try {
@@ -76,12 +77,21 @@ const Leaderboard = () => {
         isLive: false,
     });
 
-    // Calculate countdown to January 15, 2026
+    const launchStartRef = useRef(new Date());
+
+    const launchProgress = useMemo(() => {
+        const total = LAUNCH_DATE - launchStartRef.current;
+        const remaining = LAUNCH_DATE - new Date();
+        if (total <= 0) return 100;
+        const pct = ((total - remaining) / total) * 100;
+        return Math.min(100, Math.max(0, pct));
+    }, [countdown.seconds]);
+
+    // Calculate countdown to launch
     useEffect(() => {
         const calculateCountdown = () => {
-            const launchDate = new Date('2026-01-15T00:00:00Z');
             const now = new Date();
-            const diff = launchDate - now;
+            const diff = LAUNCH_DATE - now;
 
             if (diff <= 0) {
                 setCountdown({
@@ -189,42 +199,69 @@ const Leaderboard = () => {
             {/* Navigation */}
             <Navbar />
 
-            {/* Countdown Timer Overlay - Shows before January 15 */}
+            {/* Countdown Timer Overlay - Shows before launch */}
             {!countdown.isLive && (
                 <div className="countdown-overlay">
-                    <div className="countdown-container">
-                        <h2 className="countdown-title">Leaderboard Locked</h2>
-                        <p className="countdown-description">Please wait for the leaderboard to open.</p>
-                        <div className="countdown-timer">
-                            <div className="countdown-unit">
-                                <span className="countdown-value">{String(countdown.days).padStart(2, '0')}</span>
-                                <span className="countdown-label">Days</span>
+                    <div className="ship-console">
+                        <div className="ship-grid" aria-hidden="true" />
+                        <div className="ship-header">
+                            <div className="ship-pill">Status • Locked</div>
+                            <p className="ship-subtitle">Leaderboard launch sequence engaged</p>
+                            <h2 className="ship-title">Launch in</h2>
+                            <p className="ship-meta">Goes live on 16 Jan, 9:00 PM IST</p>
+                        </div>
+
+                        <div className="ship-countdown">
+                            {[{
+                                label: 'Days',
+                                value: String(countdown.days).padStart(2, '0'),
+                            }, {
+                                label: 'Hours',
+                                value: String(countdown.hours).padStart(2, '0'),
+                            }, {
+                                label: 'Minutes',
+                                value: String(countdown.minutes).padStart(2, '0'),
+                            }, {
+                                label: 'Seconds',
+                                value: String(countdown.seconds).padStart(2, '0'),
+                            }].map((item) => (
+                                <div key={item.label} className="ship-countdown-tile">
+                                    <div className="ship-countdown-value">{item.value}</div>
+                                    <div className="ship-countdown-label">{item.label}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="ship-progress">
+                            <div className="ship-progress-track">
+                                <div
+                                    className="ship-progress-fill"
+                                    style={{ width: `${launchProgress.toFixed(1)}%` }}
+                                />
                             </div>
-                            <span className="countdown-separator">:</span>
-                            <div className="countdown-unit">
-                                <span className="countdown-value">{String(countdown.hours).padStart(2, '0')}</span>
-                                <span className="countdown-label">Hours</span>
-                            </div>
-                            <span className="countdown-separator">:</span>
-                            <div className="countdown-unit">
-                                <span className="countdown-value">{String(countdown.minutes).padStart(2, '0')}</span>
-                                <span className="countdown-label">Minutes</span>
-                            </div>
-                            <span className="countdown-separator">:</span>
-                            <div className="countdown-unit">
-                                <span className="countdown-value">{String(countdown.seconds).padStart(2, '0')}</span>
-                                <span className="countdown-label">Seconds</span>
+                            <div className="ship-progress-meta">
+                                <span>Pre-flight checks</span>
+                                <span>{launchProgress.toFixed(0)}% complete</span>
                             </div>
                         </div>
-                        <a
-                            href="https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="register-btn"
-                        >
-                            Register Now
-                        </a>
-                        <p className="countdown-subtitle">DSCWoC 2026 Leaderboard Coming Soon</p>
+
+                        <div className="ship-actions">
+                            <a
+                                href="https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ship-button primary"
+                            >
+                                Register Crew
+                            </a>
+                            <Link to="/guidelines" className="ship-button ghost">View Guidelines</Link>
+                        </div>
+
+                        <div className="ship-badges">
+                            <span className="ship-badge">Autolock at T0</span>
+                            <span className="ship-badge">Dock ID: DSC-WOC-2026</span>
+                            <span className="ship-badge">Timezone: IST</span>
+                        </div>
                     </div>
                 </div>
             )}

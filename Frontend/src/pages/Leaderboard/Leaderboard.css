@@ -5,170 +5,235 @@
   overflow-anchor: none;
 }
 
-.leaderboard-content {
-  position: relative;
-  z-index: 10;
-  padding: 1rem;
-  padding-top: 5rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Remove the purple terminal outline for Leaderboard only */
-.leaderboard-container .terminal-screen {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  box-shadow: none !important;
-}
-
-.lb-page {
+.countdown-overlay {
+  position: fixed;
+  inset: 0;
   display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.15), rgba(10, 15, 28, 0.9)), #0a0f1c;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 30;
+  pointer-events: auto;
 }
 
-/* ===========================================================================
-   Motion (small pop interactions)
-   ========================================================================== */
-
-@keyframes lb-pop-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.985);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-
-  .lb-hero,
-  .lb-metric,
-  .lb-pill,
-  .lb-podium-card-inner,
-  .lb-row {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-
-
-/* ===========================================================================
-   Hero card (title + metrics + pills)
-   ========================================================================== */
-
-.lb-hero {
-  position: relative;
-  border-radius: 1.25rem;
-  padding: 1.25rem;
-  background: rgba(13, 2, 33, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  overflow: hidden;
-  animation: lb-pop-in 0.45s ease both;
-}
-
-.lb-hero::before {
+.countdown-overlay::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(800px 200px at 30% 20%, rgba(139, 92, 246, 0.18), transparent 60%),
-    radial-gradient(700px 220px at 80% 50%, rgba(168, 85, 247, 0.12), transparent 60%);
+  background-image: radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.8) 40%, transparent),
+    radial-gradient(1px 1px at 80% 30%, rgba(255, 255, 255, 0.7) 40%, transparent),
+    radial-gradient(1px 1px at 50% 70%, rgba(255, 255, 255, 0.6) 40%, transparent);
+  opacity: 0.4;
+  animation: starTwinkle 6s ease-in-out infinite;
   pointer-events: none;
 }
 
-.lb-hero-left,
-.lb-hero-right,
-.lb-hero-bottom {
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.ship-console {
   position: relative;
-  z-index: 1;
+  width: min(960px, 94vw);
+  padding: 2.5rem;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #ffffff, #f3f7fb);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  z-index: 31;
 }
 
-.lb-title {
-  margin: 0;
-  font-family: 'Orbitron', 'Exo 2', sans-serif;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  line-height: 1.05;
-  font-size: 2rem;
-  color: #f3f4f6;
+.ship-console::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(91, 155, 255, 0.12), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(142, 124, 240, 0.12), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(34, 211, 238, 0.12), transparent 40%);
+  pointer-events: none;
 }
 
-.lb-title-accent {
-  display: inline-block;
-  background: linear-gradient(45deg, #8b5cf6, #a855f7);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+.ship-grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
-.lb-hero-right {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.75rem;
-  margin-top: 1rem;
+.ship-header {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
 }
 
-.lb-metric {
-  border-radius: 1rem;
-  padding: 0.9rem 1rem;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.lb-metric-k {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.65rem;
-  color: rgba(156, 163, 175, 0.9);
-  font-family: 'Exo 2', sans-serif;
-}
-
-.lb-metric-v {
-  margin-top: 0.25rem;
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #f3f4f6;
-  font-family: 'Exo 2', sans-serif;
-}
-
-.lb-metric-purple {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.16), rgba(168, 85, 247, 0.08));
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.lb-metric-green {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.06));
-  border-color: rgba(16, 185, 129, 0.2);
-}
-
-.lb-hero-bottom {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 1rem;
-}
-
-.lb-pill {
+.ship-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  width: fit-content;
-  padding: 0.65rem 0.9rem;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
   border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(243, 244, 246, 0.9);
-  font-family: 'Exo 2', sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.lb-pill-link {
+.ship-subtitle {
+  margin: 0.75rem 0 0.35rem;
+  color: #334155;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ship-title {
+  margin: 0.15rem 0;
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ship-meta {
+  color: #475569;
+  margin: 0.2rem 0;
+  font-weight: 500;
+}
+
+.ship-countdown {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.9rem;
+  margin: 1.5rem 0;
+}
+
+.ship-countdown-tile {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(243, 244, 246, 0.85));
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  padding: 1rem 0.9rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  text-align: center;
+}
+
+.ship-countdown-value {
+  font-size: clamp(2.4rem, 4vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+}
+
+.ship-countdown-label {
+  margin-top: 0.2rem;
+  color: #475569;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.ship-progress {
+  position: relative;
+  z-index: 2;
+  margin: 1rem 0 1.5rem;
+}
+
+.ship-progress-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.08), rgba(15, 23, 42, 0.02));
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.ship-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0ea5e9, #6366f1);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.45);
+  transition: width 0.4s ease;
+}
+
+.ship-progress-meta {
+  margin-top: 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #475569;
+  font-weight: 600;
+}
+
+.ship-actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.ship-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
   text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.ship-button.primary {
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  color: #f8fafc;
+  box-shadow: 0 12px 30px rgba(99, 102, 241, 0.35);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+.ship-button.ghost {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 20px rgba(15, 23, 42, 0.08);
+}
+
+.ship-button:hover {
+  transform: translateY(-2px);
+}
+
+.ship-badges {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  color: #475569;
+}
+
+.ship-badge {
+  padding: 0.45rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
 .lb-pill-dot {
   width: 8px;
   height: 8px;
