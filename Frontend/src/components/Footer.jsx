@@ -1,5 +1,10 @@
 import { Github, Linkedin, Mail, Instagram } from 'lucide-react';
 
+const quickLinkColumns = [
+  ['Home', 'About', 'Timeline'],
+  ['Tracks', 'Projects', 'Rewards'],
+];
+
 const Footer = () => {
   return (
     <footer className="relative py-12 px-6 border-t border-cosmic-purple/10">
@@ -25,19 +30,23 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              {['Home', 'About', 'Timeline', 'Tracks', 'Projects', 'Rewards'].map((item) => (
-                <li key={item}>
-                  <a
-                    href={`#${item.toLowerCase()}`}
-                    className="text-gray-400 hover:text-cosmic-purple transition-colors text-sm"
-                  >
-                    {item}
-                  </a>
-                </li>
+            <h3 className="text-white font-semibold mt- 10 mb-10">Quick Links</h3>
+            <div className="grid grid-cols-2 gap-x-8">
+              {quickLinkColumns.map((column, colIndex) => (
+                <ul key={colIndex} className="space-y-2">
+                  {column.map((item) => (
+                    <li key={item}>
+                      <a
+                        href={`#${item.toLowerCase()}`}
+                        className="text-gray-400 hover:text-cosmic-purple transition-colors text-sm"
+                      >
+                        {item}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               ))}
-            </ul>
+            </div>
           </div>
 
           {/* Social Links */}
@@ -49,19 +58,22 @@ const Footer = () => {
                 { name: 'LinkedIn', icon: Linkedin, url: 'https://www.linkedin.com/in/data-science-club-vit-bhopal-5b9b02232/', color: 'hover:text-blue-500' },
                 { name: 'Email', icon: Mail, url: 'mailto:dsc.vitb@vitbhopal.ac.in', color: 'hover:text-pink-400' },
                 { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/dsc_vitb/', color: 'hover:text-pink-500' }
-              ].map(({ name, icon: Icon, url, color }) => (
-                <a
-                  key={name}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-10 h-10 rounded-full glass-effect flex items-center justify-center text-cosmic-purple ${color} transition-all duration-300 hover:glow-effect`}
-                  aria-label={name}
-                  title={name}
-                >
-                  <Icon size={20} />
-                </a>
-              ))}
+              ].map(({ name, icon, url, color }) => {
+                const IconComponent = icon;
+                return (
+                  <a
+                    key={name}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-10 h-10 rounded-full glass-effect flex items-center justify-center text-cosmic-purple ${color} transition-all duration-300 hover:glow-effect`}
+                    aria-label={name}
+                    title={name}
+                  >
+                    <IconComponent size={20} />
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>

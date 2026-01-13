@@ -1,6 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+const normalizeApiBaseUrl = (raw) => {
+  if (!raw) return 'http://localhost:5000/api/v1';
+  const base = String(raw).replace(/\/+$/, '');
+  if (base.endsWith('/api/v1')) return base;
+  if (base.endsWith('/api')) return `${base}/v1`;
+  if (base.includes('/api/v1')) return base;
+  return `${base}/api/v1`;
+};
+
+const API_BASE_URL = normalizeApiBaseUrl(
+  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL
+);
 
 // Helper to get auth headers
 const getAuthHeaders = () => {
@@ -262,7 +273,9 @@ export const useBadges = () => {
 /**
  * Fetch User Dashboard Data
  */
-export const useUserDashboardData = () => {
+export const useUserDashboardData = (options = {}) => {
+  const { enabled = true } = options;
+
   return useQuery({
     queryKey: ['userDashboardData'],
     queryFn: async () => {
@@ -276,15 +289,20 @@ export const useUserDashboardData = () => {
       if (!response.ok) throw new Error('Failed to fetch user dashboard data');
       return response.json();
     },
+    enabled,
     staleTime: 15 * 60 * 1000, // User dashboard data changes infrequently
     gcTime: 20 * 60 * 1000,
   });
 };
 
+
+
 /**
  * Fetch Pull request Data of logged in user
  */
-export const useUserPullRequests = (id) => {
+export const useUserPullRequests = (id, options = {}) => {
+  const { enabled } = options;
+
   return useQuery({
     queryKey: ['userPullRequests', id],
     queryFn: async () => {
@@ -298,7 +316,7 @@ export const useUserPullRequests = (id) => {
       if (!response.ok) throw new Error('Failed to fetch user pull requests');
       return response.json();
     },
-    enabled: !!id, // Don't fetch if id is not available
+    enabled: enabled ?? !!id, // Don't fetch if id is not available
     staleTime: 15 * 60 * 1000,
     gcTime: 20 * 60 * 1000,
   });

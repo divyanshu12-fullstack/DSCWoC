@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -34,6 +34,11 @@ const TERMINAL_LINES = [
   '> STATUS: READY FOR DEPLOYMENT',
   '> AWAITING CREW REGISTRATION...',
 ];
+
+const seededNoise = (seed) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
 
 const AboutSection = () => {
   const terminalRef = useRef(null);
@@ -77,15 +82,31 @@ const AboutSection = () => {
     const computer = computerRef.current;
     if (isMobile) return undefined;
 
+    let computerFloatTween;
+    let computerIntroTween;
+
     if (computer) {
-      // 3D computer animation
-      gsap.fromTo(
+      gsap.set(computer, { transformOrigin: '50% 50%', yPercent: 0 });
+
+      // Prepare gentle floating animation but keep it paused until intro finishes
+      computerFloatTween = gsap.to(computer, {
+        yPercent: 4,
+        duration: 4,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        force3D: true,
+        paused: true,
+      });
+
+      // 3D computer reveal animation
+      computerIntroTween = gsap.fromTo(
         computer,
         {
           opacity: 0,
           rotateX: 45,
           rotateY: -30,
-          z: -200
+          z: -200,
         },
         {
           opacity: 1,
@@ -94,6 +115,7 @@ const AboutSection = () => {
           z: 0,
           duration: 1.5,
           ease: 'power3.out',
+          onComplete: () => computerFloatTween?.play(),
           scrollTrigger: {
             trigger: computer,
             start: 'top 80%',
@@ -101,19 +123,10 @@ const AboutSection = () => {
             onEnter: () => {
               // Start typing effect when terminal comes into view
               startTyping();
-            }
+            },
           },
         }
       );
-
-      // Gentle floating animation
-      gsap.to(computer, {
-        rotateY: -10,
-        duration: 4,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
     }
 
     if (terminal) {
@@ -134,16 +147,20 @@ const AboutSection = () => {
     }
 
     return () => {
+      computerFloatTween?.kill();
+      computerIntroTween?.kill();
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
   }, [isMobile, startTyping]);
 
-  const mobileInsights = [
-    { label: 'Mission Status', value: 'Active', accent: 'from-cosmic-purple to-nebula-pink' },
-    { label: 'Objectives', value: '4 Weeks · 10 Phases', accent: 'from-stellar-cyan to-galaxy-violet' },
-    { label: 'Comms Link', value: 'Uplink Stable', accent: 'from-amber-400 to-orange-500' },
-    { label: 'Next Milestone', value: 'Orbit Phase I', accent: 'from-emerald-400 to-teal-500' },
-  ];
+  const contributionCells = useMemo(
+    () =>
+      Array.from({ length: 35 }, (_, i) => ({
+        opacity: 0.3 + seededNoise(i + 1) * 0.4,
+        delay: `${(i * 0.06) % 2}s`,
+      })),
+    []
+  );
 
   return (
     <section id="about" className="relative py-32 px-6" style={{ perspective: '1500px' }}>
@@ -159,7 +176,7 @@ const AboutSection = () => {
           <div className="w-full rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-[#0a0f1c] via-[#0f172a] to-[#0b1323] p-5 shadow-xl shadow-cyan-500/20 space-y-4 relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 20% 20%, rgba(34,211,238,0.08), transparent 35%), radial-gradient(circle at 80% 0%, rgba(139,92,246,0.08), transparent 30%)' }}></div>
             <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"></div>
-            
+
             {/* Intro Text */}
             <div className="relative">
               <p className="text-sm text-slate-200 leading-relaxed">DSC Winter of Code is an intensive 4-week program designed to introduce students to open-source development. Learn real-world skills, contribute to meaningful projects, and grow as a developer.</p>
@@ -186,7 +203,6 @@ const AboutSection = () => {
                   <span className="text-slate-200"><span className="font-semibold">Earn Recognition:</span> Certificates, badges, and portfolio-building opportunities</span>
                 </div>
               </div>
-            </div>
 
             {/* Learning Outcomes Grid */}
             <div className="grid grid-cols-2 gap-2 relative pt-2 border-t border-cyan-400/20">
@@ -228,7 +244,6 @@ const AboutSection = () => {
               <div className="text-xl font-bold text-nebula-pink mb-1">∞ Impact</div>
               <p className="text-xs text-gray-400">Build lasting skills and develop community connections</p>
             </div>
-          </div>
 
           {/* Vision Content */}
           <div className="space-y-4">
@@ -310,6 +325,8 @@ const AboutSection = () => {
                     <span>📡 UPLINK: ACTIVE</span>
                     <span>🛰️ GPS: LOCKED</span>
                   </div>
+                  <style>{`@keyframes floatMon{0%,100%{transform:translateY(0px) rotateX(3deg)}50%{transform:translateY(-15px) rotateX(5deg)}}@keyframes pulse-commit{0%,100%{opacity:.3}50%{opacity:1}}`}</style>
+                  <div className="float-mon absolute inset-0" style={{ transformStyle: 'preserve-3d', animation: 'floatMon 4s ease-in-out infinite' }}></div>
                 </div>
               </div>
 
@@ -400,7 +417,7 @@ const AboutSection = () => {
                     <div className="absolute inset-3 rounded-md bg-gradient-to-br from-cosmic-purple/30 to-nebula-pink/10 overflow-hidden">
                       <svg className="absolute inset-0 w-full h-full opacity-30"><pattern id="visionGrid" x="20" y="20" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#8b5cf6" strokeWidth="0.5" /></pattern><rect width="100%" height="100%" fill="url(#visionGrid)" /></svg>
                       <div className="absolute top-6 left-6 w-3 h-3 rounded-full bg-nebula-pink animate-pulse" style={{ boxShadow: '0 0 15px rgba(236, 72, 153, 0.8)' }}></div>
-                      <div className="absolute inset-6 flex items-center justify-center pointer-events-none"><div className="text-center"><div className="text-xs text-gray-300 mb-2 font-mono">github.com/dscwoc</div><div className="grid grid-cols-7 gap-1">{[...Array(35)].map((_, i) => (<div key={i} className="w-2.5 h-2.5 rounded-sm bg-green-500" style={{ opacity: 0.3 + Math.random() * 0.4, animation: 'pulse-commit 2.2s ease-in-out infinite', animationDelay: `${(i * 0.06) % 2}s` }} />))}</div><div className="text-xs text-gray-400 mt-2 font-mono">Contribution Graph</div></div></div>
+                      <div className="absolute inset-6 flex items-center justify-center pointer-events-none"><div className="text-center"><div className="text-xs text-gray-300 mb-2 font-mono">github.com/dscwoc</div><div className="grid grid-cols-7 gap-1">{contributionCells.map((cell, i) => (<div key={i} className="w-2.5 h-2.5 rounded-sm bg-green-500" style={{ opacity: cell.opacity, animation: 'pulse-commit 2.2s ease-in-out infinite', animationDelay: cell.delay }} />))}</div><div className="text-xs text-gray-400 mt-2 font-mono">Contribution Graph</div></div></div>
                     </div>
                   </div>
                   <style>{`@keyframes floatMon{0%,100%{transform:translateY(0px) rotateX(3deg)}50%{transform:translateY(-15px) rotateX(5deg)}}@keyframes pulse-commit{0%,100%{opacity:.3}50%{opacity:1}}`}</style>

@@ -11,15 +11,13 @@ import { BadgesSection } from "../components/usersDashboard/BadgesSection.jsx";
 import { LeaderboardPreview } from "../components/usersDashboard/LeaderboardPreview.jsx";
 import { EventCountdown } from "../components/usersDashboard/EventCountdown.jsx";
 
-import {
-  currentUser,
-  userProjects,
-  leaderboard,
-  getUserRank,
-  eventDates,
-} from "../data/mockData";
+import { userProjects, eventDates } from "../data/mockData";
 
-import { useUserDashboardData, useUserPullRequests } from "../hooks/useApi.js";
+import {
+  useLeaderboard,
+  useUserDashboardData,
+  useUserPullRequests,
+} from "../hooks/useApi.js";
 
 /* -------------------------------- Utilities -------------------------------- */
 
@@ -39,7 +37,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const user = useMemo(getInitialUser, []);
 
-  const { data, isLoading, isError, error } = useUserDashboardData(Boolean(user));
+  const { data, isLoading, isError, error } = useUserDashboardData({
+    enabled: !!user,
+  });
+
+  const { data: leaderboardData, isLoading: isLeaderboardLoading } =
+    useLeaderboard(1, 10, "overall");
 
   const {
     data: pullRequestsData,
@@ -70,12 +73,33 @@ export default function Dashboard() {
 
   /* ------------------------------ Derived Data ------------------------------ */
 
-  const userRank = useMemo(() => getUserRank(user?.id), [user?.id]);
+  const leaderboardEntries = useMemo(() => {
+    const list = leaderboardData?.data || [];
+
+    return list.map((u) => ({
+      userId: u._id,
+      rank: u.rank,
+      name: u.fullName || u.github_username || "Anonymous",
+      avatar:
+        u.avatar_url ||
+        "https://api.dicebear.com/7.x/avataaars/svg?seed=Anonymous",
+      points: u.stats?.points ?? 0,
+      prCount: u.stats?.totalPRs ?? 0,
+    }));
+  }, [leaderboardData]);
+
+  const userRank = useMemo(() => {
+    const fromProfile = data?.data?.stats?.rank;
+    if (typeof fromProfile === "number" && fromProfile > 0) return fromProfile;
+    const userId = data?.data?._id;
+    if (!userId) return 0;
+    return leaderboardEntries.find((e) => e.userId === userId)?.rank ?? 0;
+  }, [data, leaderboardEntries]);
 
   const profileUser = useMemo(() => {
     const u = data?.data;
     return {
-      id: u?.github_id ?? "user-001",
+      id: u?._id ?? u?.github_id ?? "user-001",
       name: u?.fullName ?? "Anonymous",
       githubUsername: u?.github_username ?? "unknown",
       avatar:
@@ -179,9 +203,9 @@ export default function Dashboard() {
 
             <aside className="space-y-8">
               <LeaderboardPreview
-                entries={leaderboard}
-                currentUserId={currentUser.id}
-                isLoading={false}
+                entries={leaderboardEntries}
+                currentUserId={data?.data?._id}
+                isLoading={isLeaderboardLoading}
               />
             </aside>
           </section>

@@ -34,9 +34,9 @@ export const getPullRequests = asyncHandler(async (req, res) => {
   }
 
   const pullRequests = await PullRequest.find(filter)
-    .populate('user', 'name email github_username')
-    .populate('project', 'name github_repo_url')
-    .populate('validation.validatedBy', 'name email')
+    .populate('user', 'fullName email github_username')
+    .populate('project', 'name github_url github_owner github_repo')
+    .populate('validation.validatedBy', 'fullName email github_username')
     .sort({ 'github_data.created_at': -1 })
     .skip(skip)
     .limit(limit);
@@ -63,9 +63,9 @@ export const getPullRequests = asyncHandler(async (req, res) => {
  */
 export const getPullRequest = asyncHandler(async (req, res) => {
   const pullRequest = await PullRequest.findById(req.params.id)
-    .populate('user', 'name email github_username')
-    .populate('project', 'name github_repo_url')
-    .populate('validation.validatedBy', 'name email');
+    .populate('user', 'fullName email github_username')
+    .populate('project', 'name github_url github_owner github_repo')
+    .populate('validation.validatedBy', 'fullName email github_username');
 
   if (!pullRequest) {
     return res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -105,7 +105,7 @@ export const getUserPullRequests = asyncHandler(async (req, res) => {
 
   const pullRequests = await PullRequest.find(filter)
     .populate('project', 'name github_repo github_owner')
-    .populate('validation.validatedBy', 'name email')
+    .populate('validation.validatedBy', 'fullName email github_username')
     .sort({ 'github_data.created_at': -1 })
     .skip(skip)
     .limit(limit);
@@ -223,8 +223,8 @@ export const syncPullRequests = asyncHandler(async (req, res) => {
     });
   }
 
-  // Extract owner and repo from github_repo_url
-  const repoUrlMatch = project.github_repo_url.match(
+  // Extract owner and repo from github_url
+  const repoUrlMatch = project.github_url.match(
     /github\.com\/([^/]+)\/([^/]+)/
   );
   if (!repoUrlMatch) {
@@ -299,32 +299,18 @@ export const syncPullRequests = asyncHandler(async (req, res) => {
     }
   }
 
-  // Update user stats for affected users
+  // Update user stats for affected users (keeps bonus points intact)
   const affectedUserIds = [...new Set(syncedPRs.map((pr) => pr.user.toString()))];
-  
-  for (const userId of affectedUserIds) {
-    const userStats = await PullRequest.aggregate([
-      { $match: { user: new mongoose.Types.ObjectId(userId) } },
-      {
-        $group: {
-          _id: null,
-          totalPoints: { $sum: '$points' },
-          totalPRs: { $sum: 1 },
-          mergedPRs: {
-            $sum: { $cond: [{ $eq: ['$status', 'merged'] }, 1, 0] },
-          },
-        },
-      },
-    ]);
 
-    if (userStats.length > 0) {
-      await User.findByIdAndUpdate(userId, {
-        'stats.totalPoints': userStats[0].totalPoints,
-        'stats.totalPRs': userStats[0].totalPRs,
-        'stats.mergedPRs': userStats[0].mergedPRs,
-      });
-    }
+  const Badge = mongoose.model('Badge');
+  for (const userId of affectedUserIds) {
+    const userDoc = await User.findById(userId);
+    if (!userDoc) continue;
+    await userDoc.updateStats();
+    await Badge.checkAndAwardBadges(userId);
   }
+
+  await User.updateRanks();
 
   res.status(HTTP_STATUS.OK).json({
     status: 'success',
@@ -379,33 +365,19 @@ export const validatePullRequest = asyncHandler(async (req, res) => {
 
   // Update user stats
   const User = mongoose.model('User');
-  const userStats = await PullRequest.aggregate([
-    { $match: { user: new mongoose.Types.ObjectId(pullRequest.user) } },
-    {
-      $group: {
-        _id: null,
-        totalPoints: { $sum: '$points' },
-        totalPRs: { $sum: 1 },
-        mergedPRs: {
-          $sum: { $cond: [{ $eq: ['$status', 'merged'] }, 1, 0] },
-        },
-      },
-    },
-  ]);
-
-  if (userStats.length > 0) {
-    await User.findByIdAndUpdate(pullRequest.user, {
-      'stats.totalPoints': userStats[0].totalPoints,
-      'stats.totalPRs': userStats[0].totalPRs,
-      'stats.mergedPRs': userStats[0].mergedPRs,
-    });
+  const Badge = mongoose.model('Badge');
+  const userDoc = await User.findById(pullRequest.user);
+  if (userDoc) {
+    await userDoc.updateStats();
+    await Badge.checkAndAwardBadges(userDoc._id);
   }
+  await User.updateRanks();
 
   // Populate and return the updated pull request
   const updatedPullRequest = await PullRequest.findById(id)
-    .populate('user', 'name email github_username')
-    .populate('project', 'name github_repo_url')
-    .populate('validation.validatedBy', 'name email');
+    .populate('user', 'fullName email github_username')
+    .populate('project', 'name github_url github_owner github_repo')
+    .populate('validation.validatedBy', 'fullName email github_username');
 
   res.status(HTTP_STATUS.OK).json({
     status: 'success',
@@ -435,8 +407,8 @@ export const getRecentPullRequests = asyncHandler(async (req, res) => {
   }
 
   const pullRequests = await PullRequest.find(filter)
-    .populate('user', 'name email github_username')
-    .populate('project', 'name github_repo_url')
+    .populate('user', 'fullName email github_username avatar_url')
+    .populate('project', 'name github_url github_owner github_repo')
     .sort({ 'github_data.created_at': -1 })
     .limit(limit);
 

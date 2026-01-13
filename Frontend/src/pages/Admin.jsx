@@ -19,10 +19,18 @@ import {
   XCircle,
 } from 'lucide-react';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL?.replace(/\/?$/, '') + '/api/v1' ||
-  'http://localhost:5000/api/v1';
+const normalizeApiBaseUrl = (raw) => {
+  if (!raw) return 'http://localhost:5000/api/v1';
+  const base = String(raw).replace(/\/+$/, '');
+  if (base.endsWith('/api/v1')) return base;
+  if (base.endsWith('/api')) return `${base}/v1`;
+  if (base.includes('/api/v1')) return base;
+  return `${base}/api/v1`;
+};
+
+const API_BASE_URL = normalizeApiBaseUrl(
+  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL
+);
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -445,11 +453,6 @@ const ImportSection = ({ getAuthToken, onSuccess }) => {
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState(null);
   const [overwrite, setOverwrite] = useState(false);
-
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL ||
-    import.meta.env.VITE_API_URL?.replace(/\/?$/, '') + '/api/v1' ||
-    'http://localhost:5000/api/v1';
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();

@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSubmitContact } from '../hooks/useApi'
-import Navbar from '../components/Navbar'
 import Starfield from '../components/Starfield'
 
 const Contact = () => {
@@ -10,10 +8,10 @@ const Contact = () => {
     email: '',
     message: ''
   })
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
   const navigate = useNavigate()
-  
-  // Use React Query mutation for form submission
-  const submitContact = useSubmitContact()
 
   const handleChange = (e) => {
     setFormData({
@@ -24,25 +22,57 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    // React Query mutation handles loading, error, and success states
-    submitContact.mutate(formData, {
-      onSuccess: () => {
-        // Clear form on successful submission
+    setLoading(true)
+    setError('')
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+      const response = await fetch(`${apiBaseUrl}/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const result = await response.json()
+
+      if (result.status === 'success') {
+        setSuccess(true)
         setFormData({ name: '', email: '', message: '' })
-      },
-    })
+      } else {
+        throw new Error(result.message || 'Failed to send message')
+      }
+    } catch (err) {
+      console.error('Contact form error:', err)
+      setError(err.message || 'Failed to send message. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="min-h-screen relative bg-gradient-to-br from-space-black via-midnight-blue to-space-black">
       <Starfield />
-      
+
       <div className="relative z-10">
-        <Navbar />
-        
-        {/* Main Content with padding for navbar */}
-        <main className="pt-20 sm:pt-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
+        <header className="bg-white/5 backdrop-blur-lg border-b border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <h1 className="text-2xl font-bold text-white">Contact Us</h1>
+              <button
+                onClick={() => navigate('/')}
+                className="text-gray-400 hover:text-white transition-colors duration-200"
+              >
+                ← Back to Home
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Info */}
             <div>
@@ -63,7 +93,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="text-white font-medium">Email</h3>
-                    <p className="text-gray-300">dsc.vitb@vitbhopal.ac.in</p>
+                    <p className="text-gray-300">dscwoc@example.com</p>
                   </div>
                 </div>
 
@@ -75,7 +105,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="text-white font-medium">GitHub</h3>
-                    <a href="https://github.com/cdsvitbhopal" target="_blank" rel="noopener noreferrer" className="text-stellar-cyan hover:underline">cdsvitbhopal</a>
+                    <p className="text-gray-300">@dsc-community</p>
                   </div>
                 </div>
 
@@ -97,18 +127,16 @@ const Contact = () => {
             {/* Contact Form */}
             <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8">
               <h3 className="text-2xl font-bold text-white mb-6">Send us a Message</h3>
-              
-              {submitContact.isSuccess && (
+
+              {success && (
                 <div className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
                   <p className="text-green-300">Message sent successfully! We'll get back to you soon.</p>
                 </div>
               )}
 
-              {submitContact.isError && (
+              {error && (
                 <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
-                  <p className="text-red-300">
-                    {submitContact.error?.message || 'Failed to send message. Please try again.'}
-                  </p>
+                  <p className="text-red-300">{error}</p>
                 </div>
               )}
 
@@ -124,8 +152,7 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    disabled={submitContact.isPending}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-stellar-cyan focus:ring-1 focus:ring-stellar-cyan disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-stellar-cyan focus:ring-1 focus:ring-stellar-cyan"
                     placeholder="Your full name"
                   />
                 </div>
@@ -141,8 +168,7 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    disabled={submitContact.isPending}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-stellar-cyan focus:ring-1 focus:ring-stellar-cyan disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-stellar-cyan focus:ring-1 focus:ring-stellar-cyan"
                     placeholder="your.email@example.com"
                   />
                 </div>
@@ -157,19 +183,18 @@ const Contact = () => {
                     value={formData.message}
                     onChange={handleChange}
                     required
-                    disabled={submitContact.isPending}
                     rows={6}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-stellar-cyan focus:ring-1 focus:ring-stellar-cyan resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-stellar-cyan focus:ring-1 focus:ring-stellar-cyan resize-none"
                     placeholder="Tell us how we can help you..."
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={submitContact.isPending}
+                  disabled={loading}
                   className="w-full bg-gradient-to-r from-stellar-cyan to-nebula-blue hover:from-stellar-cyan/80 hover:to-nebula-blue/80 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitContact.isPending ? 'Sending...' : 'Send Message'}
+                  {loading ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>

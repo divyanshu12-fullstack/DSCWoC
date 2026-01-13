@@ -57,21 +57,6 @@ const SectionSkeleton = ({ className = '' }) => (
   <div className={`w-full rounded-2xl bg-white/5 border border-white/10 animate-pulse ${className}`} />
 );
 
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    // Avoid the browser restoring scroll position on reload/back-forward.
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }, [pathname]);
-
-  return null;
-};
-
 // Home component
 const Home = () => {
   const [showStarfield, setShowStarfield] = useState(false);

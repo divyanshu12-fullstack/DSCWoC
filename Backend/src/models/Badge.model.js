@@ -146,7 +146,8 @@ badgeSchema.methods.awardToUser = async function(userId) {
   
   // Add points reward
   if (this.points_reward > 0) {
-    user.stats.points += this.points_reward;
+    user.stats.bonusPoints = Math.max(0, (user.stats?.bonusPoints || 0) + this.points_reward);
+    user.stats.points = Math.max(0, (user.stats?.prPoints || 0) + user.stats.bonusPoints);
   }
   
   await user.save();

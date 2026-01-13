@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState, lazy, Suspense } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { useLeaderboard } from '../../hooks/useApi';
 import Navbar from '../../components/Navbar';
@@ -65,8 +65,6 @@ const Leaderboard = () => {
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
 
-    // For Last Updated and Live (IST)
-    const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
     const [liveNow, setLiveNow] = useState(() => new Date());
 
     // Countdown timer state
@@ -123,6 +121,11 @@ const Leaderboard = () => {
         refetch
     } = useLeaderboard(currentPage, ITEMS_PER_PAGE, 'overall');
 
+    // For Last Updated and Live (IST)
+    const lastUpdatedAt = useMemo(() => (
+        leaderboardData?.data ? new Date() : null
+    ), [leaderboardData?.data]);
+
     // Fetch top 3 (podium)
     const {
         data: podiumData,
@@ -151,20 +154,16 @@ const Leaderboard = () => {
     }, [leaderboardData?.summary, pagination?.totalItems, users]);
 
     useEffect(() => {
-        if (leaderboardData?.data) {
-            setLastUpdatedAt(new Date());
-        }
-    }, [leaderboardData?.data]);
-
-    useEffect(() => {
         const id = setInterval(() => setLiveNow(new Date()), 1000);
         return () => clearInterval(id);
     }, []);
 
     // Prevent initial scroll-restoration/layout-shift nudging the page down.
+    const hasForcedScroll = useRef(false);
     useLayoutEffect(() => {
+        if (hasForcedScroll.current) return;
+        hasForcedScroll.current = true;
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-        // A second tick helps if something mounts asynchronously (e.g., background canvas).
         requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' }));
     }, []);
 
@@ -217,9 +216,9 @@ const Leaderboard = () => {
                                 <span className="countdown-label">Seconds</span>
                             </div>
                         </div>
-                        <a 
-                            href="https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog" 
-                            target="_blank" 
+                        <a
+                            href="https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog"
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="register-btn"
                         >
