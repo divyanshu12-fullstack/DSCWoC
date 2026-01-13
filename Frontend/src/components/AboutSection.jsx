@@ -203,7 +203,6 @@ const AboutSection = () => {
                   <span className="text-slate-200"><span className="font-semibold">Earn Recognition:</span> Certificates, badges, and portfolio-building opportunities</span>
                 </div>
               </div>
-            </div>
 
             {/* Learning Outcomes Grid */}
             <div className="grid grid-cols-2 gap-2 relative pt-2 border-t border-cyan-400/20">
@@ -245,7 +244,6 @@ const AboutSection = () => {
               <div className="text-xl font-bold text-nebula-pink mb-1">∞ Impact</div>
               <p className="text-xs text-gray-400">Build lasting skills and develop community connections</p>
             </div>
-          </div>
 
           {/* Vision Content */}
           <div className="space-y-4">
@@ -327,6 +325,8 @@ const AboutSection = () => {
                     <span>📡 UPLINK: ACTIVE</span>
                     <span>🛰️ GPS: LOCKED</span>
                   </div>
+                  <style>{`@keyframes floatMon{0%,100%{transform:translateY(0px) rotateX(3deg)}50%{transform:translateY(-15px) rotateX(5deg)}}@keyframes pulse-commit{0%,100%{opacity:.3}50%{opacity:1}}`}</style>
+                  <div className="float-mon absolute inset-0" style={{ transformStyle: 'preserve-3d', animation: 'floatMon 4s ease-in-out infinite' }}></div>
                 </div>
               </div>
 
