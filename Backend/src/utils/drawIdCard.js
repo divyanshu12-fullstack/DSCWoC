@@ -1,23 +1,11 @@
-import { createCanvas, loadImage, registerFont } from 'canvas';
+import { createCanvas, loadImage } from 'canvas';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Register fonts for proper text rendering on server
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const fontsPath = path.join(__dirname, '../../assets/fonts');
 
-try {
-  registerFont(path.join(fontsPath, 'DejaVuSans.ttf'), {
-    family: 'DejaVuSans'
-  });
-  registerFont(path.join(fontsPath, 'DejaVuSans-Bold.ttf'), {
-    family: 'DejaVuSans',
-    weight: 'bold'
-  });
-  console.log('✅ Fonts registered successfully');
-} catch (err) {
-  console.error('⚠️ Font registration failed:', err.message);
-}
+// Skip font registration - use system fonts
+console.log('✅ Using system fonts (no registration needed)');
 
 /**
  * THE GUARANTEED FIX - STEP BY STEP IMPLEMENTATION
@@ -105,10 +93,10 @@ export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) 
   ctx.textBaseline = 'top';
   ctx.globalAlpha = 1.0; // Ensure full opacity
   ctx.fillStyle = '#FFFFFF'; // Pure white for dark template
-  ctx.font = 'bold 20px DejaVuSans';
+  ctx.font = 'bold 20px sans-serif'; // Use generic sans-serif
   
   // Test text - hardcoded to ensure it appears
-  console.log('Drawing test text...');
+  console.log('Drawing test text with system sans-serif font...');
   ctx.fillText('TEST NAME HERE', layout.name.x, layout.name.y);
   ctx.fillText('github123', layout.github.x, layout.github.y);
   ctx.fillText('linkedin456', layout.linkedin.x, layout.linkedin.y);
