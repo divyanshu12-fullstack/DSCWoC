@@ -8,7 +8,7 @@ import { createCanvas, loadImage } from 'canvas';
 export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) {
   const CARD_WIDTH = 1011;
   const CARD_HEIGHT = 639;
-  const DEBUG = false; // DEBUG OVERLAY DISABLED
+  const DEBUG = true; // DEBUG: Enable to see text box positions
 
   // Precise layout coordinates from position tool (1011 x 639 template)
   const layout = {
