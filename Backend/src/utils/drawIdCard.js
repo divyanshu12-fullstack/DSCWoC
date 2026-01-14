@@ -8,7 +8,7 @@ import { createCanvas, loadImage } from 'canvas';
 export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) {
   const CARD_WIDTH = 1011;
   const CARD_HEIGHT = 639;
-  const DEBUG = true; // DEBUG OVERLAY ENABLED - Shows text box positions
+  const DEBUG = false; // DEBUG OVERLAY DISABLED
 
   // Precise layout coordinates from position tool (1011 x 639 template)
   const layout = {
@@ -82,34 +82,35 @@ export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top'; // Figma text boxes start at TOP-LEFT, not baseline
 
-  // Helper: fit text in box width
+  // Helper: fit text in box width and return the final font string
   const fitText = (text, maxWidth, maxSize, minSize, weight = '600') => {
     let size = maxSize;
-    ctx.font = `${weight} ${size}px "Arial", sans-serif`;
-    while (ctx.measureText(text).width > maxWidth && size > minSize) {
+    while (size > minSize) {
+      ctx.font = `${weight} ${size}px Arial, sans-serif`;
+      if (ctx.measureText(text).width <= maxWidth) break;
       size -= 0.5;
-      ctx.font = `${weight} ${size}px "Arial", sans-serif`;
     }
-    return size;
+    return `${weight} ${size}px Arial, sans-serif`;
   };
 
   // NAME (top-left origin)
   // Dark color for participant name
   ctx.fillStyle = '#1e293b';
-  fitText(
+  const nameFont = fitText(
     user.fullName || 'Participant',
     layout.name.width,
     layout.name.maxFontSize,
     layout.name.minFontSize,
     'bold'
   );
+  ctx.font = nameFont;
   ctx.fillText(user.fullName || 'Participant', layout.name.x, layout.name.y);
 
   // LINKEDIN (top-left origin)
   // Dark color for LinkedIn handle
   ctx.fillStyle = '#1e293b';
   const linkedinSize = Math.floor(layout.linkedin.height * 0.65);
-  ctx.font = `500 ${linkedinSize}px "Arial", sans-serif`;
+  ctx.font = `500 ${linkedinSize}px Arial, sans-serif`;
   const linkedinText = user.linkedinUrl ? user.linkedinUrl.split('/').pop() || '' : '';
   if (linkedinText) {
     ctx.fillText(linkedinText, layout.linkedin.x, layout.linkedin.y);
@@ -119,23 +120,24 @@ export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) 
   // Dark color for GitHub handle
   ctx.fillStyle = '#1e293b';
   const githubSize = Math.floor(layout.github.height * 0.65);
-  ctx.font = `500 ${githubSize}px "Arial", sans-serif`;
+  ctx.font = `500 ${githubSize}px Arial, sans-serif`;
   ctx.fillText(user.github_username || 'github', layout.github.x, layout.github.y);
 
   // EMAIL (top-left origin)
   // Dark color for email
   ctx.fillStyle = '#1e293b';
   const emailSize = Math.floor(layout.email.height * 0.7);
-  fitText(user.email || 'user@email.com', layout.email.width, emailSize, 7, '400');
+  const emailFont = fitText(user.email || 'user@email.com', layout.email.width, emailSize, 7, '400');
+  ctx.font = emailFont;
   ctx.fillText(user.email || 'user@email.com', layout.email.x, layout.email.y);
 
   // AUTH KEY (top-left origin)
   // Dark color for authenticity key
   ctx.fillStyle = '#1e293b';
   const authSize = Math.floor(layout.authKey.height * 0.7);
-  const authText = user.authKey || user.github_username || 'N/A';
-  fitText(authText, layout.authKey.width, authSize, 6, '400');
-  ctx.fillText(authText, layout.authKey.x, layout.authKey.y);
+  const authFont = fitText(user.authKey || user.github_username || 'N/A', layout.authKey.width, authSize, 6, '400');
+  ctx.font = authFont;
+  ctx.fillText(user.authKey || user.github_username || 'N/A', layout.authKey.x, layout.authKey.y);
 
   // STEP 6: DEBUG OVERLAY (red boxes prove alignment)
   if (DEBUG) {
