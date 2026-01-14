@@ -20,6 +20,11 @@ import verifyRoutes from './routes/verify.routes.js';
 
 const app = express();
 
+// Trust proxy for Railway/production environments
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Security middleware
 app.use(helmet());
 

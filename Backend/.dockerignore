@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+.git
+.env
+.env.local
+.DS_Store
+test-id-generator.html
+promote-user.js
+recalculate-leaderboard.js
+recalculate-stats.js
+test-connections.js
+GuideNotes
+DEPLOYMENT_GUIDE.md
+CACHING_OPTIMIZATION.md
+IMPLEMENTATION_GUIDE.md
