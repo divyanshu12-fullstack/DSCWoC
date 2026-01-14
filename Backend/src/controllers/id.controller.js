@@ -17,11 +17,19 @@ function generateAuthKey() {
 
 export const generateIdCard = async (req, res, next) => {
   try {
-    const { email, linkedinId } = req.body || {};
+    const { email, linkedinId, name, githubId } = req.body || {};
     const file = req.file;
+
+    if (!name) {
+      return res.status(400).json({ message: 'Full name is required' });
+    }
 
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
+    }
+
+    if (!githubId) {
+      return res.status(400).json({ message: 'GitHub ID is required' });
     }
 
     if (!linkedinId) {
@@ -70,9 +78,9 @@ export const generateIdCard = async (req, res, next) => {
       : `https://linkedin.com/in/${linkedinId}`;
     
     const user = {
-      fullName: 'Test User',
+      fullName: name,
       role: 'Participant',
-      github_username: 'testuser',
+      github_username: githubId,
       linkedinUrl: linkedinUrl,
       authKey: authKey,
       email: email,

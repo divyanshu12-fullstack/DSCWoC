@@ -2,35 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ID Card Generator</title>
+  <title>ID Card Generator - Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f5f5f5;
       padding: 40px;
     }
-
-    .container {
-      max-width: 400px;
-      margin: auto;
-      backgroif it is not working try using different font
-11:02 pm
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>ID Card Generator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      padding: 40px;
-    }
-
     .container {
       max-width: 400px;
       margin: auto;
@@ -39,75 +18,96 @@
       border-radius: 6px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
     label {
       display: block;
       margin-top: 15px;
       font-weight: bold;
     }
-
     input, button {
       width: 100%;
       margin-top: 8px;
       padding: 10px;
       font-size: 14px;
+      box-sizing: border-box;
     }
-
     button {
       margin-top: 20px;
       background: #007bff;
       color: white;
       border: none;
       cursor: pointer;
+      font-weight: bold;
     }
-
     button:disabled {
       background: #aaa;
+      cursor: not-allowed;
     }
-
     .error {
       color: red;
       margin-top: 10px;
+      padding: 10px;
+      background: #ffe6e6;
+      border-radius: 4px;
+    }
+    .success {
+      color: green;
+      margin-top: 10px;
+      padding: 10px;
+      background: #e6ffe6;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <h2>Generate ID Card</h2>
+    <h2>🎨 Generate ID Card (Test)</h2>
+    <label>Full Name</label>
+    <input type="text" id="name" placeholder="John Doe" required />
 
     <label>Email</label>
     <input type="email" id="email" placeholder="test@example.com" required />
 
+    <label>GitHub Username</label>
+    <input type="text" id="githubId" placeholder="octocat" required />
+
     <label>LinkedIn ID</label>
-    <input type="text" id="linkedinId" placeholder="prem-kumar" required />
+    <input type="text" id="linkedinId" placeholder="john-doe" required />
 
     <label>Photo (JPG / PNG, max 2MB)</label>
     <input type="file" id="photo" accept="image/png, image/jpeg" required />
 
     <button id="submitBtn">Generate ID</button>
-
-    <div class="error" id="error"></div>
+    <div id="error" class="error" style="display:none;"></div>
+    <div id="success" class="success" style="display:none;"></div>
   </div>
 
   <script>
     const submitBtn = document.getElementById('submitBtn');
     const errorDiv = document.getElementById('error');
+    const successDiv = document.getElementById('success');
 
     submitBtn.addEventListener('click', async () => {
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
       errorDiv.textContent = '';
+      successDiv.textContent = '';
 
+      const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
+      const githubId = document.getElementById('githubId').value;
       const linkedinId = document.getElementById('linkedinId').value;
       const photoInput = document.getElementById('photo');
 
-      if (!email || !linkedinId || !photoInput.files.length) {
-        errorDiv.textContent = 'All fields are required';
+      if (!name || !email || !githubId || !linkedinId || !photoInput.files.length) {
+        errorDiv.textContent = '⚠️ All fields are required';
+        errorDiv.style.display = 'block';
         return;
       }
 
       const formData = new FormData();
+      formData.append('name', name);
       formData.append('email', email);
+      formData.append('githubId', githubId);
       formData.append('linkedinId', linkedinId);
       formData.append('photo', photoInput.files[0]);
 
@@ -121,149 +121,41 @@
         });
 
         if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.message || 'Failed to generate ID');
+          let errMsg = 'Failed to generate ID';
+          try {
+            const err = await response.json();
+            errMsg = err.message || errMsg;
+          } catch (e) {}
+          throw new Error(errMsg);
         }
 
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
-
         const a = document.createElement('a');
         a.href = url;
         a.download = 'DSWC_ID.png';
         document.body.appendChild(a);
         a.click();
         a.remove();
-
         URL.revokeObjectURL(url);
+
+        successDiv.textContent = '✅ ID card generated! Check downloads.';
+        successDiv.style.display = 'block';
+        
+        // Reset form
+        document.getElementById('name').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('githubId').value = '';
+        document.getElementById('linkedinId').value = '';
+        document.getElementById('photo').value = '';
       } catch (err) {
-        errorDiv.textContent = err.message;
+        errorDiv.textContent = '❌ ' + (err.message || 'Something went wrong');
+        errorDiv.style.display = 'block';
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Generate ID';
       }
     });
   </script>
-
-</body>
-</html>
-Edited11:03 pm
-use this code to check
-11:03 pm
-ok
-11:03 pm
-
-
-und: #fff;
-      padding: 20px;
-      border-radius: 6px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    input, button {
-      width: 100%;
-      margin-top: 8px;
-      padding: 10px;
-      font-size: 14px;
-    }
-
-    button {
-      margin-top: 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background: #aaa;
-    }
-
-    .error {
-      color: red;
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <h2>Generate ID Card</h2>
-
-    <label>Email</label>
-    <input type="email" id="email" placeholder="test@example.com" required />
-
-    <label>LinkedIn ID</label>
-    <input type="text" id="linkedinId" placeholder="prem-kumar" required />
-
-    <label>Photo (JPG / PNG, max 2MB)</label>
-    <input type="file" id="photo" accept="image/png, image/jpeg" required />
-
-    <button id="submitBtn">Generate ID</button>
-
-    <div class="error" id="error"></div>
-  </div>
-
-  <script>
-    const submitBtn = document.getElementById('submitBtn');
-    const errorDiv = document.getElementById('error');
-
-    submitBtn.addEventListener('click', async () => {
-      errorDiv.textContent = '';
-
-      const email = document.getElementById('email').value;
-      const linkedinId = document.getElementById('linkedinId').value;
-      const photoInput = document.getElementById('photo');
-
-      if (!email || !linkedinId || !photoInput.files.length) {
-        errorDiv.textContent = 'All fields are required';
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('linkedinId', linkedinId);
-      formData.append('photo', photoInput.files[0]);
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Generating...';
-
-      try {
-        const response = await fetch('http://localhost:5000/api/v1/id/generate', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.message || 'Failed to generate ID');
-        }
-
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'DSWC_ID.png';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        errorDiv.textContent = err.message;
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Generate ID';
-      }
-    });
-  </script>
-
 </body>
 </html>

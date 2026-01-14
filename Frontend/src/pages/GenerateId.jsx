@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://dscwoc-production.up.railway.app/api/v1';
+// Use localhost for development, Railway for production
+const API_BASE = import.meta.env.VITE_API_URL || 
+  (window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api/v1'
+    : 'https://dscwoc-production.up.railway.app/api/v1');
 
 const GenerateId = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [githubId, setGithubId] = useState('');
   const [linkedinId, setLinkedinId] = useState('');
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,8 +28,16 @@ const GenerateId = () => {
     setError('');
     setSuccess('');
 
+    if (!name.trim()) {
+      setError('Full name is required');
+      return;
+    }
     if (!email.trim()) {
       setError('Email is required');
+      return;
+    }
+    if (!githubId.trim()) {
+      setError('GitHub ID is required');
       return;
     }
     if (!linkedinId.trim()) {
@@ -37,9 +51,11 @@ const GenerateId = () => {
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('photo', file);
+      formData.append('name', name.trim());
       formData.append('email', email.trim());
+      formData.append('githubId', githubId.trim());
       formData.append('linkedinId', linkedinId.trim());
+      formData.append('photo', file);
 
       const res = await fetch(`${API_BASE}/id/generate`, {
         method: 'POST',
@@ -47,8 +63,12 @@ const GenerateId = () => {
       });
 
       if (!res.ok) {
-        const msg = await res.json().catch(() => ({}));
-        throw new Error(msg?.message || 'Generation failed');
+        let errMsg = 'Generation failed';
+        try {
+          const msg = await res.json();
+          errMsg = msg?.message || errMsg;
+        } catch (e) {}
+        throw new Error(errMsg);
       }
 
       const blob = await res.blob();
@@ -56,9 +76,17 @@ const GenerateId = () => {
       const a = document.createElement('a');
       a.href = url;
       a.download = 'DSWC_ID.png';
+      document.body.appendChild(a);
       a.click();
+      a.remove();
       URL.revokeObjectURL(url);
-      setSuccess('ID card generated. Download started.');
+
+      setSuccess('✅ ID card generated! Check your downloads.');
+      setName('');
+      setEmail('');
+      setGithubId('');
+      setLinkedinId('');
+      setFile(null);
     } catch (err) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -81,6 +109,21 @@ const GenerateId = () => {
         <form onSubmit={handleSubmit} className="space-y-6 bg-white/5 border border-white/10 rounded-2xl p-8">
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-cyan-300">
+              Full Name <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your full name"
+              required
+              className="w-full rounded-lg bg-slate-900 border border-slate-700 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            />
+            <p className="text-xs text-slate-400">Your full name as you'd like it displayed on your ID</p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-cyan-300">
               Registration Email <span className="text-red-400">*</span>
             </label>
             <input
@@ -92,6 +135,21 @@ const GenerateId = () => {
               className="w-full rounded-lg bg-slate-900 border border-slate-700 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
             />
             <p className="text-xs text-slate-400">Use the email you registered with for DSCWoC 2026</p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-cyan-300">
+              GitHub Username <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={githubId}
+              onChange={(e) => setGithubId(e.target.value)}
+              placeholder="e.g., octocat"
+              required
+              className="w-full rounded-lg bg-slate-900 border border-slate-700 px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+            />
+            <p className="text-xs text-slate-400">Your GitHub username (the part after github.com/)</p>
           </div>
 
           <div className="space-y-2">
