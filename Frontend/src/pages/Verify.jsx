@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 
-const API_BASE = '/verify';
+const API_BASE = import.meta.env.VITE_VERIFY_URL || 'https://dscwoc-backend.up.railway.app/verify';
 
 const Verify = () => {
   const [params] = useSearchParams();
