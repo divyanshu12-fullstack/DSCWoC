@@ -8,7 +8,7 @@ import { createCanvas, loadImage } from 'canvas';
 export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) {
   const CARD_WIDTH = 1011;
   const CARD_HEIGHT = 639;
-  const DEBUG = false; // DEBUG OVERLAY DISABLED - No red boxes
+  const DEBUG = true; // DEBUG OVERLAY ENABLED - Shows text box positions
 
   // Precise layout coordinates from position tool (1011 x 639 template)
   const layout = {
@@ -94,8 +94,8 @@ export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) 
   };
 
   // NAME (top-left origin)
-  // Softer off-white for participant name
-  ctx.fillStyle = '#f1f5f9';
+  // Dark color for participant name
+  ctx.fillStyle = '#1e293b';
   fitText(
     user.fullName || 'Participant',
     layout.name.width,
@@ -106,8 +106,8 @@ export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) 
   ctx.fillText(user.fullName || 'Participant', layout.name.x, layout.name.y);
 
   // LINKEDIN (top-left origin)
-  // White for LinkedIn handle
-  ctx.fillStyle = '#f8fafc';
+  // Dark color for LinkedIn handle
+  ctx.fillStyle = '#1e293b';
   const linkedinSize = Math.floor(layout.linkedin.height * 0.65);
   ctx.font = `500 ${linkedinSize}px "Arial", sans-serif`;
   const linkedinText = user.linkedinUrl ? user.linkedinUrl.split('/').pop() || '' : '';
@@ -116,22 +116,22 @@ export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) 
   }
 
   // GITHUB (top-left origin)
-  // White for GitHub handle
-  ctx.fillStyle = '#f8fafc';
+  // Dark color for GitHub handle
+  ctx.fillStyle = '#1e293b';
   const githubSize = Math.floor(layout.github.height * 0.65);
   ctx.font = `500 ${githubSize}px "Arial", sans-serif`;
   ctx.fillText(user.github_username || 'github', layout.github.x, layout.github.y);
 
   // EMAIL (top-left origin)
-  // Darker grey for email for better contrast
-  ctx.fillStyle = '#94a3b8';
+  // Dark color for email
+  ctx.fillStyle = '#1e293b';
   const emailSize = Math.floor(layout.email.height * 0.7);
   fitText(user.email || 'user@email.com', layout.email.width, emailSize, 7, '400');
   ctx.fillText(user.email || 'user@email.com', layout.email.x, layout.email.y);
 
   // AUTH KEY (top-left origin)
-  // White for authenticity key
-  ctx.fillStyle = '#f8fafc';
+  // Dark color for authenticity key
+  ctx.fillStyle = '#1e293b';
   const authSize = Math.floor(layout.authKey.height * 0.7);
   const authText = user.authKey || user.github_username || 'N/A';
   fitText(authText, layout.authKey.width, authSize, 6, '400');
