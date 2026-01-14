@@ -1,4 +1,23 @@
-import { createCanvas, loadImage } from 'canvas';
+import { createCanvas, loadImage, registerFont } from 'canvas';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Register fonts for proper text rendering on server
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const fontsPath = path.join(__dirname, '../../assets/fonts');
+
+try {
+  registerFont(path.join(fontsPath, 'Inter-Regular.ttf'), {
+    family: 'Inter'
+  });
+  registerFont(path.join(fontsPath, 'Inter-Bold.ttf'), {
+    family: 'Inter',
+    weight: 'bold'
+  });
+  console.log('✅ Fonts registered successfully');
+} catch (err) {
+  console.error('⚠️ Font registration failed:', err.message);
+}
 
 /**
  * THE GUARANTEED FIX - STEP BY STEP IMPLEMENTATION
@@ -86,32 +105,35 @@ export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) 
   const fitText = (text, maxWidth, maxSize, minSize, weight = '600') => {
     let size = maxSize;
     while (size > minSize) {
-      ctx.font = `${weight} ${size}px Arial, sans-serif`;
+      const fontWeight = weight === 'bold' ? 'bold' : weight;
+      ctx.font = `${fontWeight} ${size}px Inter, sans-serif`;
       if (ctx.measureText(text).width <= maxWidth) break;
       size -= 0.5;
     }
-    return `${weight} ${size}px Arial, sans-serif`;
+    const fontWeight = weight === 'bold' ? 'bold' : weight;
+    return `${fontWeight} ${size}px Inter, sans-serif`;
   };
 
   // NAME (top-left origin)
   // Dark color for participant name
   ctx.fillStyle = '#1e293b';
+  const nameText = String(user.fullName || 'Participant');
   const nameFont = fitText(
-    user.fullName || 'Participant',
+    nameText,
     layout.name.width,
     layout.name.maxFontSize,
     layout.name.minFontSize,
     'bold'
   );
   ctx.font = nameFont;
-  ctx.fillText(user.fullName || 'Participant', layout.name.x, layout.name.y);
+  ctx.fillText(nameText, layout.name.x, layout.name.y);
 
   // LINKEDIN (top-left origin)
   // Dark color for LinkedIn handle
   ctx.fillStyle = '#1e293b';
   const linkedinSize = Math.floor(layout.linkedin.height * 0.65);
-  ctx.font = `500 ${linkedinSize}px Arial, sans-serif`;
-  const linkedinText = user.linkedinUrl ? user.linkedinUrl.split('/').pop() || '' : '';
+  ctx.font = `500 ${linkedinSize}px Inter, sans-serif`;
+  const linkedinText = user.linkedinUrl ? String(user.linkedinUrl.split('/').pop() || '') : '';
   if (linkedinText) {
     ctx.fillText(linkedinText, layout.linkedin.x, layout.linkedin.y);
   }
@@ -120,24 +142,27 @@ export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) 
   // Dark color for GitHub handle
   ctx.fillStyle = '#1e293b';
   const githubSize = Math.floor(layout.github.height * 0.65);
-  ctx.font = `500 ${githubSize}px Arial, sans-serif`;
-  ctx.fillText(user.github_username || 'github', layout.github.x, layout.github.y);
+  ctx.font = `500 ${githubSize}px Inter, sans-serif`;
+  const githubText = String(user.github_username || 'github');
+  ctx.fillText(githubText, layout.github.x, layout.github.y);
 
   // EMAIL (top-left origin)
   // Dark color for email
   ctx.fillStyle = '#1e293b';
   const emailSize = Math.floor(layout.email.height * 0.7);
-  const emailFont = fitText(user.email || 'user@email.com', layout.email.width, emailSize, 7, '400');
+  const emailText = String(user.email || 'user@email.com');
+  const emailFont = fitText(emailText, layout.email.width, emailSize, 7, '400');
   ctx.font = emailFont;
-  ctx.fillText(user.email || 'user@email.com', layout.email.x, layout.email.y);
+  ctx.fillText(emailText, layout.email.x, layout.email.y);
 
   // AUTH KEY (top-left origin)
   // Dark color for authenticity key
   ctx.fillStyle = '#1e293b';
   const authSize = Math.floor(layout.authKey.height * 0.7);
-  const authFont = fitText(user.authKey || user.github_username || 'N/A', layout.authKey.width, authSize, 6, '400');
+  const authText = String(user.authKey || user.github_username || 'N/A');
+  const authFont = fitText(authText, layout.authKey.width, authSize, 6, '400');
   ctx.font = authFont;
-  ctx.fillText(user.authKey || user.github_username || 'N/A', layout.authKey.x, layout.authKey.y);
+  ctx.fillText(authText, layout.authKey.x, layout.authKey.y);
 
   // STEP 6: DEBUG OVERLAY (red boxes prove alignment)
   if (DEBUG) {
