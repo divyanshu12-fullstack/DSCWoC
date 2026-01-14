@@ -101,31 +101,6 @@ export const generateIdCard = async (req, res, next) => {
     await user.save();
     */
 
-    if (file.size > 2 * 1024 * 1024) {
-      return res.status(400).json({ message: 'Image must be 2MB or smaller' });
-    }
-
-    if (!fs.existsSync(templatePath)) {
-      return res.status(500).json({ message: 'Template not found. Please add assets/id-template.png' });
-    }
-
-    const qrBuffer = await generateQr(user.authKey || githubUsername);
-
-    const idBuffer = await drawIdCard({
-      templatePath,
-      photoBuffer: file.buffer,
-      qrBuffer,
-      user: {
-        fullName: user.fullName,
-        role: user.role,
-        github_username: user.github_username,
-        linkedinUrl: user.linkedinUrl,
-        authKey: user.authKey,
-      },
-    });
-
-    await User.updateOne({ _id: user._id }, { $inc: { idGeneratedCount: 1 } });
-
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Disposition', 'attachment; filename="DSWC_ID.png"');
     res.setHeader('Cache-Control', 'no-store');
