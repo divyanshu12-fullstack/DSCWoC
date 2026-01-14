@@ -14,8 +14,8 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files (includes package-lock.json for reproducible builds)
+COPY package.json package-lock.json ./
 
 # Install dependencies
 RUN npm ci --omit=dev
