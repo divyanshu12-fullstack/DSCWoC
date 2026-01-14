@@ -16,8 +16,18 @@ export default defineConfig({
       },
     },
   },
-  // Enable gzip compression
+  // Enable gzip compression and proxy API requests to backend
   server: {
     compress: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/verify': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
   },
 })

@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    githubUrl: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     email: {
       type: String,
       required: true,
@@ -40,6 +45,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    linkedinUrl: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     yearOfStudy: {
       type: Number,
       min: 1,
@@ -51,6 +61,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['Contributor', 'Mentor', 'Admin'],
       default: 'Contributor',
+    },
+
+    // ID card generation auth key and usage limits
+    authKey: {
+      type: String,
+      unique: false, // uniqueness enforced via partial index below
+      trim: true,
+    },
+    idGeneratedCount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     
     // Statistics
@@ -109,6 +131,10 @@ const userSchema = new mongoose.Schema(
 // Indexes for performance (only for non-unique fields)
 userSchema.index({ 'stats.points': -1 });
 userSchema.index({ role: 1 });
+userSchema.index(
+  { authKey: 1 },
+  { unique: true, partialFilterExpression: { authKey: { $exists: true, $ne: null } } }
+);
 
 // Virtual for pull requests
 userSchema.virtual('pullRequests', {

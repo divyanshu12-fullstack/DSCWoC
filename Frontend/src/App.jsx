@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 import { lazy, Suspense, useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import AboutSection from './components/AboutSection';
@@ -26,6 +26,8 @@ import UsersDashboard from './pages/UsersDashboard.jsx';
 import Leaderboard from './pages/Leaderboard/Leaderboard';
 import Projects from './pages/Projects';
 import Guidelines from './pages/Guidelines';
+import GenerateId from './pages/GenerateId';
+import Verify from './pages/Verify';
 
 // Loading fallback component
 const AnimationFallback = () => (
@@ -144,6 +146,19 @@ const Home = () => {
               {ctaVisible ? <CTASection /> : <SectionSkeleton className="h-[420px]" />}
             </div>
 
+            {/* Temporary: testing CTA for ID card generation */}
+            <div className="px-6 pb-10">
+              <div className="rounded-2xl border border-slate-800 bg-white/5 backdrop-blur p-6 text-center">
+                <p className="text-sm text-slate-200 mb-3">Testing: generate your DSWC ID card</p>
+                <Link
+                  to="/generate-id"
+                  className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-cyan-500/30 transition"
+                >
+                  Generate ID Card
+                </Link>
+              </div>
+            </div>
+
             <Footer />
           </div>
         </div>
@@ -171,6 +186,8 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/generate-id" element={<GenerateId />} />
+        <Route path="/verify" element={<Verify />} />
       </Routes>
     </Router>
   );

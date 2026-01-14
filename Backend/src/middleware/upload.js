@@ -1,0 +1,21 @@
+import multer from 'multer';
+
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const allowedMime = ['image/jpeg', 'image/png'];
+
+const storage = multer.memoryStorage();
+
+const fileFilter = (req, file, cb) => {
+  if (!allowedMime.includes(file.mimetype)) {
+    return cb(new Error('Only JPG/PNG images are allowed'));
+  }
+  cb(null, true);
+};
+
+const upload = multer({
+  storage,
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter,
+});
+
+export default upload;

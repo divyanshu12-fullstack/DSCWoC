@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ID Card Position Tool - Drag & Drop Shapes</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      margin-bottom: 20px;
+      color: #4ade80;
+    }
+    
+    .canvas-container {
+      position: relative;
+      display: inline-block;
+      background: #2a2a2a;
+      border: 2px solid #4ade80;
+      margin-bottom: 20px;
+    }
+    
+    #canvas {
+      display: block;
+      cursor: crosshair;
+    }
+    
+    .controls {
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .controls h2 {
+      margin-bottom: 15px;
+      color: #4ade80;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    button {
+      padding: 10px 20px;
+      background: #4ade80;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: #22c55e;
+    }
+    
+    button.active {
+      background: #f59e0b;
+    }
+    
+    .info-panel {
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .shape-info {
+      background: #1a1a1a;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-left: 4px solid #4ade80;
+      border-radius: 4px;
+    }
+    
+    .shape-info.selected {
+      border-left-color: #f59e0b;
+      background: #2d2d2d;
+    }
+    
+    .shape-info h3 {
+      color: #4ade80;
+      margin-bottom: 10px;
+    }
+    
+    .coord {
+      color: #60a5fa;
+    }
+    
+    .delete-btn {
+      background: #ef4444;
+      padding: 5px 10px;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+    
+    .delete-btn:hover {
+      background: #dc2626;
+    }
+    
+    .size-controls {
+      display: inline-flex;
+      gap: 5px;
+      margin-left: 10px;
+    }
+    
+    .size-btn {
+      background: #4ade80;
+      padding: 5px 12px;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0;
+    }
+    
+    .size-btn:hover {
+      background: #22c55e;
+    }
+    
+    .input-group {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    .input-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    
+    .input-field label {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+    }
+    
+    .input-field input {
+      background: #1a1a1a;
+      border: 1px solid #4ade80;
+      color: #fff;
+      padding: 5px;
+      border-radius: 3px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      width: 100%;
+    }
+    
+    .input-field input:focus {
+      outline: none;
+      border-color: #f59e0b;
+    }
+    
+    .export-code {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+    
+    .export-code pre {
+      color: #4ade80;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 ID Card Position Tool</h1>
+    
+    <div class="controls">
+      <h2>Add Shapes</h2>
+      <div class="btn-group">
+        <button onclick="setMode('ellipse')">➕ Add Ellipse (Photo)</button>
+        <button onclick="setMode('rect')">➕ Add Rectangle (Text/QR)</button>
+        <button onclick="clearShapes()">🗑️ Clear All</button>
+      </div>
+      <p style="color: #888; font-size: 14px;">
+        Click on canvas to place shape • Drag to move • Use inputs for exact values • Arrow keys to nudge (1px) • Shift+Arrow (10px)
+      </p>
+    </div>
+    
+    <div class="canvas-container">
+      <canvas id="canvas"></canvas>
+    </div>
+    
+    <div class="info-panel">
+      <h2>📍 Shape Positions & Dimensions</h2>
+      <div id="shapes-list"></div>
+      
+      <div class="export-code">
+        <h3 style="color: #4ade80; margin-bottom: 10px;">📋 Export Code</h3>
+        <pre id="export-code">// Add shapes to see coordinates...</pre>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    let mode = null; // 'ellipse' or 'rect'
+    let shapes = [];
+    let selectedShape = null;
+    let dragging = false;
+    let resizing = false;
+    let dragStart = { x: 0, y: 0 };
+    let resizeHandle = null;
+    
+    // Load template image
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      render();
+    };
+    img.src = './assets/id-template.png';
+    
+    function setMode(newMode) {
+      mode = mode === newMode ? null : newMode;
+      document.querySelectorAll('.btn-group button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      if (mode) {
+        event.target.classList.add('active');
+      }
+    }
+    
+    function clearShapes() {
+      if (confirm('Clear all shapes?')) {
+        shapes = [];
+        selectedShape = null;
+        render();
+        updateInfo();
+      }
+    }
+    
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      // Check if clicking on a shape
+      const clickedShape = shapes.find(s => isPointInShape(x, y, s));
+      
+      if (clickedShape) {
+        selectedShape = clickedShape;
+        
+        // Check if clicking resize handle
+        const handle = getResizeHandle(x, y, clickedShape);
+        if (handle) {
+          resizing = true;
+          resizeHandle = handle;
+        } else {
+          dragging = true;
+        }
+        
+        dragStart = { x, y };
+        render();
+        updateInfo();
+      } else if (mode) {
+        // Create new shape
+        const size = mode === 'ellipse' ? 100 : 80;
+        shapes.push({
+          type: mode,
+          x: x - size / 2,
+          y: y - size / 2,
+          width: size,
+          height: mode === 'ellipse' ? size : size,
+          label: `${mode === 'ellipse' ? 'Photo' : 'Box'} ${shapes.length + 1}`
+        });
+        selectedShape = shapes[shapes.length - 1];
+        mode = null;
+        document.querySelectorAll('.btn-group button').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        render();
+        updateInfo();
+      }
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      if (dragging && selectedShape) {
+        const dx = x - dragStart.x;
+        const dy = y - dragStart.y;
+        selectedShape.x += dx;
+        selectedShape.y += dy;
+        dragStart = { x, y };
+        render();
+        updateInfo();
+      } else if (resizing && selectedShape) {
+        const dx = x - dragStart.x;
+        const dy = y - dragStart.y;
+        
+        if (resizeHandle === 'se') {
+          selectedShape.width = Math.max(20, selectedShape.width + dx);
+          selectedShape.height = Math.max(20, selectedShape.height + dy);
+        }
+        
+        dragStart = { x, y };
+        render();
+        updateInfo();
+      }
+    });
+    
+    canvas.addEventListener('mouseup', () => {
+      dragging = false;
+      resizing = false;
+      resizeHandle = null;
+    });
+    
+    function isPointInShape(x, y, shape) {
+      if (shape.type === 'ellipse') {
+        const cx = shape.x + shape.width / 2;
+        const cy = shape.y + shape.height / 2;
+        const rx = shape.width / 2;
+        const ry = shape.height / 2;
+        return Math.pow((x - cx) / rx, 2) + Math.pow((y - cy) / ry, 2) <= 1;
+      } else {
+        return x >= shape.x && x <= shape.x + shape.width &&
+               y >= shape.y && y <= shape.y + shape.height;
+      }
+    }
+    
+    function getResizeHandle(x, y, shape) {
+      const handleSize = 10;
+      const rx = shape.x + shape.width;
+      const ry = shape.y + shape.height;
+      
+      if (Math.abs(x - rx) < handleSize && Math.abs(y - ry) < handleSize) {
+        return 'se';
+      }
+      return null;
+    }
+    
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      
+      // Draw shapes
+      shapes.forEach(shape => {
+        const isSelected = shape === selectedShape;
+        
+        ctx.save();
+        
+        if (shape.type === 'ellipse') {
+          ctx.beginPath();
+          ctx.ellipse(
+            shape.x + shape.width / 2,
+            shape.y + shape.height / 2,
+            shape.width / 2,
+            shape.height / 2,
+            0, 0, Math.PI * 2
+          );
+          ctx.strokeStyle = isSelected ? '#f59e0b' : '#4ade80';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = isSelected ? '#f59e0b' : '#60a5fa';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+        }
+        
+        // Draw label
+        ctx.fillStyle = isSelected ? '#f59e0b' : '#4ade80';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText(shape.label, shape.x, shape.y - 8);
+        
+        // Draw resize handle for selected shape
+        if (isSelected) {
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(shape.x + shape.width - 5, shape.y + shape.height - 5, 10, 10);
+        }
+        
+        ctx.restore();
+      });
+    }
+    
+    function updateInfo() {
+      const listEl = document.getElementById('shapes-list');
+      const codeEl = document.getElementById('export-code');
+      
+      listEl.innerHTML = shapes.map((shape, i) => `
+        <div class="shape-info ${shape === selectedShape ? 'selected' : ''}" onclick="selectShape(${i})">
+          <h3>${shape.label} ${shape.type === 'ellipse' ? '⭕' : '▭'}</h3>
+          <div>
+            <div class="input-group">
+              <div class="input-field">
+                <label>X</label>
+                <input type="number" value="${Math.round(shape.x)}" onchange="updateValue(${i}, 'x', this.value)" onclick="event.stopPropagation();">
+              </div>
+              <div class="input-field">
+                <label>Y</label>
+                <input type="number" value="${Math.round(shape.y)}" onchange="updateValue(${i}, 'y', this.value)" onclick="event.stopPropagation();">
+              </div>
+              <div class="input-field">
+                <label>Width</label>
+                <input type="number" value="${Math.round(shape.width)}" onchange="updateValue(${i}, 'width', this.value)" onclick="event.stopPropagation();">
+              </div>
+              <div class="input-field">
+                <label>Height</label>
+                <input type="number" value="${Math.round(shape.height)}" onchange="updateValue(${i}, 'height', this.value)" onclick="event.stopPropagation();">
+              </div>
+            </div>
+            <div style="margin-top: 10px;">
+              <div class="size-controls">
+                <button class="size-btn" onclick="resizeShape(${i}, -1); event.stopPropagation();">−1</button>
+                <button class="size-btn" onclick="resizeShape(${i}, -10); event.stopPropagation();">−10</button>
+                <button class="size-btn" onclick="resizeShape(${i}, 10); event.stopPropagation();">+10</button>
+                <button class="size-btn" onclick="resizeShape(${i}, 1); event.stopPropagation();">+1</button>
+              </div>
+              <button class="delete-btn" onclick="deleteShape(${i}); event.stopPropagation();">Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      // Generate export code
+      if (shapes.length > 0) {
+        const code = `const layout = {\n${shapes.map(s => {
+          const name = s.label.toLowerCase().replace(/\s+/g, '_');
+          if (s.type === 'ellipse') {
+            return `  ${name}: { x: ${Math.round(s.x)}, y: ${Math.round(s.y)}, width: ${Math.round(s.width)}, height: ${Math.round(s.height)} }`;
+          } else {
+            return `  ${name}: { x: ${Math.round(s.x)}, y: ${Math.round(s.y)}, width: ${Math.round(s.width)}, height: ${Math.round(s.height)} }`;
+          }
+        }).join(',\n')}\n};`;
+        
+        codeEl.textContent = code;
+      } else {
+        codeEl.textContent = '// Add shapes to see coordinates...';
+      }
+    }
+    
+    function deleteShape(index) {
+      shapes.splice(index, 1);
+      if (selectedShape === shapes[index]) {
+        selectedShape = null;
+      }
+    function updateValue(index, property, value) {
+      const shape = shapes[index];
+      shape[property] = Math.max(0, parseInt(value) || 0);
+      render();
+      updateInfo();
+    }
+    
+    // Keyboard controls for precision
+    document.addEventListener('keydown', (e) => {
+      if (!selectedShape) return;
+      
+      const index = shapes.indexOf(selectedShape);
+      const step = e.shiftKey ? 10 : 1;
+      
+      switch(e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          selectedShape.x -= step;
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          selectedShape.x += step;
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          selectedShape.y -= step;
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          selectedShape.y += step;
+          break;
+        case 'Delete':
+        case 'Backspace':
+          e.preventDefault();
+          deleteShape(index);
+          return;
+      }
+      
+      render();
+      updateInfo();
+    });
+    
+      render();
+      updateInfo();
+    }
+    
+    function selectShape(index) {
+      selectedShape = shapes[index];
+      render();
+      updateInfo();
+    }
+    
+    function resizeShape(index, delta) {
+      const shape = shapes[index];
+      shape.width = Math.max(20, shape.width + delta);
+      shape.height = Math.max(20, shape.height + delta);
+      render();
+      updateInfo();
+    }
+    
+    updateInfo();
+  </script>
+</body>
+</html>
