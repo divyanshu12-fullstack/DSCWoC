@@ -114,8 +114,8 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-lg bg-black/30 md:bg-transparent ${scrolled
-          ? 'glass-effect shadow-lg shadow-cosmic-purple/10'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-lg bg-black/40 md:bg-transparent md:backdrop-blur-none ${scrolled
+          ? 'glass-effect shadow-lg shadow-cosmic-purple/10 md:backdrop-blur-lg'
           : ''
         }`}
     >
