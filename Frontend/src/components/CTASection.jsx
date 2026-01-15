@@ -4,7 +4,7 @@ const CTASection = () => {
       <div className="max-w-4xl mx-auto text-center">
         <div className="relative">
           {/* Glow effect background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-cosmic-purple/10 via-nebula-pink/10 to-galaxy-violet/10 opacity-70" aria-hidden="true"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-cosmic-purple/10 via-nebula-pink/10 to-galaxy-violet/10 opacity-10" aria-hidden="true"></div>
 
           <div className="relative space-y-8">
             <h2 className="text-5xl md:text-6xl font-bold text-white">

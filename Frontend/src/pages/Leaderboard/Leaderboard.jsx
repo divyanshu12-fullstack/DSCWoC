@@ -66,6 +66,7 @@ const Leaderboard = () => {
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
 
+
     const [liveNow, setLiveNow] = useState(() => new Date());
 
     // Countdown timer state
@@ -189,8 +190,23 @@ const Leaderboard = () => {
         }
     };
 
+    const overlayVisible = !countdown.isLive;
+
+    // Prevent page scrolling when the overlay/banner is active
+    useEffect(() => {
+        const originalOverflow = document.body.style.overflow;
+        if (overlayVisible) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = originalOverflow || '';
+        }
+        return () => {
+            document.body.style.overflow = originalOverflow;
+        };
+    }, [overlayVisible]);
+
     return (
-        <div className="leaderboard-container">
+        <div className={`leaderboard-container ${overlayVisible ? 'lb-locked' : ''}`}>
             {/* Starfield Background - Lazy loaded for performance */}
             <Suspense fallback={<div className="fixed inset-0 bg-slate-950" />}>
                 <Starfield />
@@ -199,225 +215,227 @@ const Leaderboard = () => {
             {/* Navigation */}
             <Navbar />
 
-            {/* Countdown Timer Overlay - Shows before launch */}
-            {!countdown.isLive && (
-                <div className="countdown-overlay">
-                    <div className="ship-console">
-                        <div className="ship-grid" aria-hidden="true" />
-                        <div className="ship-header">
-                            <div className="ship-pill">Status • Locked</div>
-                            <p className="ship-subtitle">Leaderboard launch sequence engaged</p>
-                            <h2 className="ship-title">Launch in</h2>
-                            <p className="ship-meta">Goes live on 16 Jan, 9:00 PM IST</p>
-                        </div>
+            <div className="leaderboard-stage">
+                {/* Countdown Timer Overlay - Shows before launch */}
+                {overlayVisible && (
+                    <div className="countdown-overlay mt-8">
+                        <div className="ship-console">
+                            <div className="ship-grid" aria-hidden="true" />
+                            <div className="ship-header">
+                                <div className="ship-pill">Status • Locked</div>
+                                <p className="ship-subtitle">Leaderboard launch sequence engaged</p>
+                                <h2 className="ship-title">Launch in</h2>
+                                <p className="ship-meta">Goes live on 16 Jan, 9:00 PM IST</p>
+                            </div>
 
-                        <div className="ship-countdown">
-                            {[{
-                                label: 'Days',
-                                value: String(countdown.days).padStart(2, '0'),
-                            }, {
-                                label: 'Hours',
-                                value: String(countdown.hours).padStart(2, '0'),
-                            }, {
-                                label: 'Minutes',
-                                value: String(countdown.minutes).padStart(2, '0'),
-                            }, {
-                                label: 'Seconds',
-                                value: String(countdown.seconds).padStart(2, '0'),
-                            }].map((item) => (
-                                <div key={item.label} className="ship-countdown-tile">
-                                    <div className="ship-countdown-value">{item.value}</div>
-                                    <div className="ship-countdown-label">{item.label}</div>
+                            <div className="ship-countdown">
+                                {[{
+                                    label: 'Days',
+                                    value: String(countdown.days).padStart(2, '0'),
+                                }, {
+                                    label: 'Hours',
+                                    value: String(countdown.hours).padStart(2, '0'),
+                                }, {
+                                    label: 'Minutes',
+                                    value: String(countdown.minutes).padStart(2, '0'),
+                                }, {
+                                    label: 'Seconds',
+                                    value: String(countdown.seconds).padStart(2, '0'),
+                                }].map((item) => (
+                                    <div key={item.label} className="ship-countdown-tile">
+                                        <div className="ship-countdown-value">{item.value}</div>
+                                        <div className="ship-countdown-label">{item.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="ship-progress">
+                                <div className="ship-progress-track">
+                                    <div
+                                        className="ship-progress-fill"
+                                        style={{ width: `${launchProgress.toFixed(1)}%` }}
+                                    />
                                 </div>
-                            ))}
-                        </div>
-
-                        <div className="ship-progress">
-                            <div className="ship-progress-track">
-                                <div
-                                    className="ship-progress-fill"
-                                    style={{ width: `${launchProgress.toFixed(1)}%` }}
-                                />
+                                <div className="ship-progress-meta">
+                                    <span>Pre-flight checks</span>
+                                    <span>{launchProgress.toFixed(0)}% complete</span>
+                                </div>
                             </div>
-                            <div className="ship-progress-meta">
-                                <span>Pre-flight checks</span>
-                                <span>{launchProgress.toFixed(0)}% complete</span>
+
+                            <div className="ship-actions">
+                                <a
+                                    href="https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="ship-button primary"
+                                >
+                                    Register Crew
+                                </a>
+                                <Link to="/guidelines" className="ship-button ghost">View Guidelines</Link>
                             </div>
-                        </div>
 
-                        <div className="ship-actions">
-                            <a
-                                href="https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="ship-button primary"
-                            >
-                                Register Crew
-                            </a>
-                            <Link to="/guidelines" className="ship-button ghost">View Guidelines</Link>
-                        </div>
-
-                        <div className="ship-badges">
-                            <span className="ship-badge">Autolock at T0</span>
-                            <span className="ship-badge">Dock ID: DSC-WOC-2026</span>
-                            <span className="ship-badge">Timezone: IST</span>
+                            <div className="ship-badges">
+                                <span className="ship-badge">Autolock at T0</span>
+                                <span className="ship-badge">Dock ID: DSC-WOC-2026</span>
+                                <span className="ship-badge">Timezone: IST</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Main Content */}
-            <div className="leaderboard-content">
-                <div className="lb-page">
-                    {/* Hero card */}
-                    <section className="lb-hero" aria-label="Leaderboard summary">
-                        <div className="lb-hero-left">
-                            <h1 className="lb-title">DSCWoC 2026<br /><span className="lb-title-accent">Leaderboard.</span></h1>
-                        </div>
-
-                        <div className="lb-hero-right">
-                            <div className="lb-metric transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/30 hover:-translate-y-0.5">
-                                <div className="lb-metric-k">Contributors</div>
-                                <div className="lb-metric-v">{summary?.contributors ?? '—'}</div>
+                {/* Main Content */}
+                <div className={`leaderboard-content ${overlayVisible ? 'lb-content-hidden' : ''}`}>
+                    <div className="lb-page">
+                        {/* Hero card */}
+                        <section className="lb-hero" aria-label="Leaderboard summary">
+                            <div className="lb-hero-left">
+                                <h1 className="lb-title">DSCWoC 2026<br /><span className="lb-title-accent">Leaderboard.</span></h1>
                             </div>
-                            <div className="lb-metric lb-metric-purple transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/30 hover:-translate-y-0.5">
-                                <div className="lb-metric-k">Total Points</div>
-                                <div className="lb-metric-v">{(summary?.totalPoints ?? 0).toLocaleString()}</div>
+
+                            <div className="lb-hero-right">
+                                <div className="lb-metric transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/30 hover:-translate-y-0.5">
+                                    <div className="lb-metric-k">Contributors</div>
+                                    <div className="lb-metric-v">{summary?.contributors ?? '—'}</div>
+                                </div>
+                                <div className="lb-metric lb-metric-purple transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/30 hover:-translate-y-0.5">
+                                    <div className="lb-metric-k">Total Points</div>
+                                    <div className="lb-metric-v">{(summary?.totalPoints ?? 0).toLocaleString()}</div>
+                                </div>
+                                <div className="lb-metric lb-metric-green transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/30 hover:-translate-y-0.5">
+                                    <div className="lb-metric-k">Merged PRs</div>
+                                    <div className="lb-metric-v">{(summary?.totalMergedPRs ?? 0).toLocaleString()}</div>
+                                </div>
                             </div>
-                            <div className="lb-metric lb-metric-green transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/30 hover:-translate-y-0.5">
-                                <div className="lb-metric-k">Merged PRs</div>
-                                <div className="lb-metric-v">{(summary?.totalMergedPRs ?? 0).toLocaleString()}</div>
+
+                            <div className="lb-hero-bottom">
+                                <div className="lb-pill transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/20 hover:-translate-y-0.5">
+                                    <span className="lb-pill-dot lb-dot-green" aria-hidden="true" />
+                                    <span className="lb-pill-k">Last updated</span>
+                                    <span className="lb-pill-v">{lastUpdatedAt ? formatLeaderboardDateTime(lastUpdatedAt) : '—'}</span>
+                                </div>
+                                <div className="lb-pill transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/20 hover:-translate-y-0.5">
+                                    <span className="lb-pill-dot lb-dot-blue" aria-hidden="true" />
+                                    <span className="lb-pill-k">Live (IST)</span>
+                                    <span className="lb-pill-v">{formatLeaderboardDateTime(liveNow)}</span>
+                                </div>
                             </div>
-                        </div>
+                        </section>
 
-                        <div className="lb-hero-bottom">
-                            <div className="lb-pill transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/20 hover:-translate-y-0.5">
-                                <span className="lb-pill-dot lb-dot-green" aria-hidden="true" />
-                                <span className="lb-pill-k">Last updated</span>
-                                <span className="lb-pill-v">{lastUpdatedAt ? formatLeaderboardDateTime(lastUpdatedAt) : '—'}</span>
+                        {/* Loading State */}
+                        {(isLoading || podiumLoading) && <LeaderboardSkeleton />}
+
+                        {/* Error State */}
+                        {(isError || podiumError) && (
+                            <div className="error-container">
+                                <div className="error-icon">⚠️</div>
+                                <p className="error-message">
+                                    {error?.message || 'Failed to load leaderboard'}
+                                </p>
+                                <button className="retry-btn" onClick={() => refetch()}>
+                                    Try Again
+                                </button>
                             </div>
-                            <div className="lb-pill transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/20 hover:-translate-y-0.5">
-                                <span className="lb-pill-dot lb-dot-blue" aria-hidden="true" />
-                                <span className="lb-pill-k">Live (IST)</span>
-                                <span className="lb-pill-v">{formatLeaderboardDateTime(liveNow)}</span>
+                        )}
+
+                        {/* Empty State */}
+                        {!isLoading && !isError && users.length === 0 && (
+                            <div className="empty-state">
+                                <div className="empty-icon">📊</div>
+                                <p>No contributors found.</p>
+                                <Link to="/" className="retry-btn" style={{ display: 'inline-block', marginTop: '1rem', textDecoration: 'none' }}>
+                                    Back to Home
+                                </Link>
                             </div>
-                        </div>
-                    </section>
+                        )}
 
-                    {/* Loading State */}
-                    {(isLoading || podiumLoading) && <LeaderboardSkeleton />}
+                        {!isLoading && !podiumLoading && !isError && !podiumError && users.length > 0 && (
+                            <>
+                                <LeaderboardPodium
+                                    podiumUsers={podiumUsers}
+                                    getAvatarUrl={getAvatarUrl}
+                                    getPodiumAward={getPodiumAward}
+                                />
 
-                    {/* Error State */}
-                    {(isError || podiumError) && (
-                        <div className="error-container">
-                            <div className="error-icon">⚠️</div>
-                            <p className="error-message">
-                                {error?.message || 'Failed to load leaderboard'}
-                            </p>
-                            <button className="retry-btn" onClick={() => refetch()}>
-                                Try Again
-                            </button>
-                        </div>
-                    )}
+                                {/* List */}
+                                <section className="lb-list" aria-label="Leaderboard list">
+                                    {users.map((user) => {
+                                        const rank = user.rank;
+                                        const mergedPRs = user?.stats?.mergedPRs ?? 0;
+                                        const points = user?.stats?.points ?? 0;
+                                        const projects = user?.projectsCount ?? 0;
 
-                    {/* Empty State */}
-                    {!isLoading && !isError && users.length === 0 && (
-                        <div className="empty-state">
-                            <div className="empty-icon">📊</div>
-                            <p>No contributors found.</p>
-                            <Link to="/" className="retry-btn" style={{ display: 'inline-block', marginTop: '1rem', textDecoration: 'none' }}>
-                                Back to Home
-                            </Link>
-                        </div>
-                    )}
+                                        return (
+                                            <article
+                                                key={user._id || user.id}
+                                                className={`lb-row cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cosmic-purple/40 hover:scale-[1.01] ${rank <= 3 ? `lb-row-top lb-row-top-${rank}` : ''}`.trim()}
+                                            >
+                                                <div className="lb-row-rank" aria-label={`Rank ${rank}`}>{rank}</div>
 
-                    {!isLoading && !podiumLoading && !isError && !podiumError && users.length > 0 && (
-                        <>
-                            <LeaderboardPodium
-                                podiumUsers={podiumUsers}
-                                getAvatarUrl={getAvatarUrl}
-                                getPodiumAward={getPodiumAward}
-                            />
-
-                            {/* List */}
-                            <section className="lb-list" aria-label="Leaderboard list">
-                                {users.map((user) => {
-                                    const rank = user.rank;
-                                    const mergedPRs = user?.stats?.mergedPRs ?? 0;
-                                    const points = user?.stats?.points ?? 0;
-                                    const projects = user?.projectsCount ?? 0;
-
-                                    return (
-                                        <article
-                                            key={user._id || user.id}
-                                            className={`lb-row cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cosmic-purple/40 hover:scale-[1.01] ${rank <= 3 ? `lb-row-top lb-row-top-${rank}` : ''}`.trim()}
-                                        >
-                                            <div className="lb-row-rank" aria-label={`Rank ${rank}`}>{rank}</div>
-
-                                            <div className="lb-row-user">
-                                                <img className="lb-row-avatar" src={getAvatarUrl(user)} alt={user.fullName || 'User avatar'} loading="lazy" />
-                                                <div className="lb-row-usertext">
-                                                    <div className="lb-row-name">{user.fullName || 'Unknown User'}</div>
-                                                    <div className="lb-row-handle">@{user.github_username || 'unknown'}</div>
-                                                    <LeaderboardSocialLinks
-                                                        githubUsername={user.github_username}
-                                                        linkedInUrl={user?.linkedin_url || user?.linkedInUrl}
-                                                        className="lb-social-row"
-                                                    />
+                                                <div className="lb-row-user">
+                                                    <img className="lb-row-avatar" src={getAvatarUrl(user)} alt={user.fullName || 'User avatar'} loading="lazy" />
+                                                    <div className="lb-row-usertext">
+                                                        <div className="lb-row-name">{user.fullName || 'Unknown User'}</div>
+                                                        <div className="lb-row-handle">@{user.github_username || 'unknown'}</div>
+                                                        <LeaderboardSocialLinks
+                                                            githubUsername={user.github_username}
+                                                            linkedInUrl={user?.linkedin_url || user?.linkedInUrl}
+                                                            className="lb-social-row"
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="lb-row-stat">
-                                                <div className="lb-row-stat-k">Merged PRs</div>
-                                                <div className="lb-row-stat-v lb-row-stat-green">{mergedPRs}</div>
-                                            </div>
+                                                <div className="lb-row-stat">
+                                                    <div className="lb-row-stat-k">Merged PRs</div>
+                                                    <div className="lb-row-stat-v lb-row-stat-green">{mergedPRs}</div>
+                                                </div>
 
-                                            <div className="lb-row-stat">
-                                                <div className="lb-row-stat-k">Projects</div>
-                                                <div className="lb-row-stat-v lb-row-stat-gold">{projects}</div>
-                                            </div>
+                                                <div className="lb-row-stat">
+                                                    <div className="lb-row-stat-k">Projects</div>
+                                                    <div className="lb-row-stat-v lb-row-stat-gold">{projects}</div>
+                                                </div>
 
-                                            <div className="lb-row-stat">
-                                                <div className="lb-row-stat-k">Points</div>
-                                                <div className="lb-row-stat-v">{points}</div>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
-                            </section>
+                                                <div className="lb-row-stat">
+                                                    <div className="lb-row-stat-k">Points</div>
+                                                    <div className="lb-row-stat-v">{points}</div>
+                                                </div>
+                                            </article>
+                                        );
+                                    })}
+                                </section>
 
-                            {/* Pagination */}
-                            {totalPages > 1 && (
-                                <nav className="lb-pagination" aria-label="Leaderboard pagination">
-                                    <button
-                                        className="lb-page-btn"
-                                        onClick={() => goToPage(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Prev
-                                    </button>
+                                {/* Pagination */}
+                                {totalPages > 1 && (
+                                    <nav className="lb-pagination" aria-label="Leaderboard pagination">
+                                        <button
+                                            className="lb-page-btn"
+                                            onClick={() => goToPage(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            Prev
+                                        </button>
 
-                                    <div className="lb-page-indicator">
-                                        <span className="lb-page-label">PAGE</span>
-                                        <span className="lb-page-value">{currentPage}</span>
-                                        <span className="lb-page-sep">/</span>
-                                        <span className="lb-page-total">{totalPages}</span>
-                                    </div>
+                                        <div className="lb-page-indicator">
+                                            <span className="lb-page-label">PAGE</span>
+                                            <span className="lb-page-value">{currentPage}</span>
+                                            <span className="lb-page-sep">/</span>
+                                            <span className="lb-page-total">{totalPages}</span>
+                                        </div>
 
-                                    <button
-                                        className="lb-page-btn"
-                                        onClick={() => goToPage(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                    >
-                                        Next
-                                    </button>
-                                </nav>
-                            )}
-                        </>
-                    )}
+                                        <button
+                                            className="lb-page-btn"
+                                            onClick={() => goToPage(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Next
+                                        </button>
+                                    </nav>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
-            <Footer />
+            {!overlayVisible && <Footer />}
         </div>
 
     );
