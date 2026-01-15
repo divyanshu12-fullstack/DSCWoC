@@ -9,6 +9,51 @@ const API_BASE = import.meta.env.VITE_API_URL ||
     ? 'http://localhost:5000/api/v1'
     : 'https://dscwoc-production.up.railway.app/api/v1');
 
+// Utility functions for input sanitization and URL extraction
+const sanitizeInput = (input) => {
+  if (!input) return '';
+  // Remove HTML tags and trim
+  return input.replace(/<[^>]*>/g, '').trim();
+};
+
+const extractGithubUsername = (input) => {
+  if (!input) return '';
+  const sanitized = sanitizeInput(input);
+  
+  // Check if it's a URL
+  if (sanitized.includes('github.com/')) {
+    try {
+      // Extract username from URL like: https://github.com/username or github.com/username
+      const match = sanitized.match(/github\.com\/([a-zA-Z0-9_-]+)/);
+      return match ? match[1] : sanitized;
+    } catch (e) {
+      return sanitized;
+    }
+  }
+  
+  // Return as-is if it's already just a username
+  return sanitized;
+};
+
+const extractLinkedinUsername = (input) => {
+  if (!input) return '';
+  const sanitized = sanitizeInput(input);
+  
+  // Check if it's a URL
+  if (sanitized.includes('linkedin.com/')) {
+    try {
+      // Extract username from URL like: https://linkedin.com/in/username or linkedin.com/in/username
+      const match = sanitized.match(/linkedin\.com\/in\/([a-zA-Z0-9_-]+)/);
+      return match ? match[1] : sanitized;
+    } catch (e) {
+      return sanitized;
+    }
+  }
+  
+  // Return as-is if it's already just a username
+  return sanitized;
+};
+
 const GenerateId = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -30,25 +75,57 @@ const GenerateId = () => {
     setSuccess('');
   };
 
+  const handleGithubChange = (e) => {
+    const value = e.target.value;
+    setGithubId(value);
+  };
+
+  const handleGithubBlur = () => {
+    // Extract username when user leaves the field
+    const extracted = extractGithubUsername(githubId);
+    if (extracted !== githubId) {
+      setGithubId(extracted);
+    }
+  };
+
+  const handleLinkedinChange = (e) => {
+    const value = e.target.value;
+    setLinkedinId(value);
+  };
+
+  const handleLinkedinBlur = () => {
+    // Extract username when user leaves the field
+    const extracted = extractLinkedinUsername(linkedinId);
+    if (extracted !== linkedinId) {
+      setLinkedinId(extracted);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     setDetectedRole('');
 
-    if (!name.trim()) {
+    // Sanitize all inputs
+    const sanitizedName = sanitizeInput(name);
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedGithub = extractGithubUsername(githubId);
+    const sanitizedLinkedin = extractLinkedinUsername(linkedinId);
+
+    if (!sanitizedName) {
       setError('Full name is required');
       return;
     }
-    if (!email.trim()) {
+    if (!sanitizedEmail) {
       setError('Email is required');
       return;
     }
-    if (!githubId.trim()) {
+    if (!sanitizedGithub) {
       setError('GitHub ID is required');
       return;
     }
-    if (!linkedinId.trim()) {
+    if (!sanitizedLinkedin) {
       setError('LinkedIn ID is required');
       return;
     }
@@ -59,10 +136,10 @@ const GenerateId = () => {
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('name', name.trim());
-      formData.append('email', email.trim());
-      formData.append('githubId', githubId.trim());
-      formData.append('linkedinId', linkedinId.trim());
+      formData.append('name', sanitizedName);
+      formData.append('email', sanitizedEmail);
+      formData.append('githubId', sanitizedGithub);
+      formData.append('linkedinId', sanitizedLinkedin);
       formData.append('photo', file);
 
       const res = await fetch(`${API_BASE}/id/generate`, {
@@ -223,12 +300,13 @@ const GenerateId = () => {
                     <input
                       type="text"
                       value={githubId}
-                      onChange={(e) => setGithubId(e.target.value)}
-                      placeholder="github-username"
+                      onChange={handleGithubChange}
+                      onBlur={handleGithubBlur}
+                      placeholder="username or https://github.com/username"
                       required
                       className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 hover:border-white/20"
                     />
-                    <p className="text-xs text-gray-400">Your GitHub profile username</p>
+                    <p className="text-xs text-gray-400">Paste GitHub URL or username - we'll extract it automatically</p>
                   </div>
 
                   <div className="space-y-2">
@@ -238,12 +316,13 @@ const GenerateId = () => {
                     <input
                       type="text"
                       value={linkedinId}
-                      onChange={(e) => setLinkedinId(e.target.value)}
-                      placeholder="linkedin-profile-url"
+                      onChange={handleLinkedinChange}
+                      onBlur={handleLinkedinBlur}
+                      placeholder="username or https://linkedin.com/in/username"
                       required
                       className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 hover:border-white/20"
                     />
-                    <p className="text-xs text-gray-400">Your LinkedIn profile username or URL</p>
+                    <p className="text-xs text-gray-400">Paste LinkedIn URL or username - we'll extract it automatically</p>
                   </div>
 
                   <div className="space-y-2">
