@@ -416,7 +416,7 @@ const Projects = () => {
       const difference = lockdownTime - now
 
       if (difference > 0) {
-        setIsLocked(false)
+        setIsLocked(true) // Projects are locked UNTIL deadline
         setTimeLeft({
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
           hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
@@ -424,7 +424,7 @@ const Projects = () => {
           seconds: Math.floor((difference / 1000) % 60),
         })
       } else {
-        setIsLocked(true)
+        setIsLocked(false) // Projects are visible AFTER deadline
         setTimeLeft({
           days: 0,
           hours: 0,
@@ -456,67 +456,59 @@ const Projects = () => {
   }
 
   return (
-    <div className={`min-h-screen relative bg-gradient-to-br from-[#05070f] via-[#0a0f1e] to-[#05070f] ${isLocked ? 'blur-sm' : ''}`}>
+    <div className="min-h-screen relative bg-gradient-to-br from-[#05070f] via-[#0a0f1e] to-[#05070f]">
       <Starfield />
 
-      <div className={`relative z-10 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className="relative z-10">
         <Navbar />
 
         <main className="pt-20 sm:pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          {/* Lockdown Timer Overlay */}
-          {isLocked && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
-              <div className="text-center">
-                <Clock className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                <h2 className="text-4xl font-bold text-white mb-2">Projects Locked</h2>
-                <p className="text-gray-300 mb-6">Submission deadline has passed</p>
-                <button
-                  onClick={() => navigate('/')}
-                  className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-lg hover:from-cyan-400 hover:to-blue-400 transition-all"
-                >
-                  Return to Home
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Projects Hidden Until Deadline */}
+          {isLocked ? (
+            <div className="min-h-[70vh] flex items-center justify-center">
+              <div className="w-full max-w-2xl">
+                <div className="text-center mb-12">
+                  <Clock className="w-20 h-20 text-amber-400 mx-auto mb-6 animate-pulse" />
+                  <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">Projects Coming Soon</h1>
+                  <p className="text-gray-300 text-lg mb-8">
+                    Projects will be revealed on January 15th at 10:00 PM. Stay tuned!
+                  </p>
+                </div>
 
-          {/* Lockdown Countdown Timer */}
-          {!isLocked && (
-            <div className="mb-12 p-6 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-2xl">
-              <div className="flex items-center gap-3 mb-4">
-                <Clock className="w-6 h-6 text-amber-400" />
-                <h3 className="text-xl font-bold text-amber-300">Project Submission Lockdown</h3>
-              </div>
-              <p className="text-gray-300 mb-4">Projects lock on January 15th at 10:00 PM. Hurry up!</p>
-              <div className="grid grid-cols-4 gap-4">
-                <div className="bg-black/40 rounded-lg p-4 text-center">
-                  <div className="text-3xl font-bold text-amber-300">{String(timeLeft.days || 0).padStart(2, '0')}</div>
-                  <div className="text-xs text-gray-400 mt-1">Days</div>
-                </div>
-                <div className="bg-black/40 rounded-lg p-4 text-center">
-                  <div className="text-3xl font-bold text-amber-300">{String(timeLeft.hours || 0).padStart(2, '0')}</div>
-                  <div className="text-xs text-gray-400 mt-1">Hours</div>
-                </div>
-                <div className="bg-black/40 rounded-lg p-4 text-center">
-                  <div className="text-3xl font-bold text-amber-300">{String(timeLeft.minutes || 0).padStart(2, '0')}</div>
-                  <div className="text-xs text-gray-400 mt-1">Minutes</div>
-                </div>
-                <div className="bg-black/40 rounded-lg p-4 text-center">
-                  <div className="text-3xl font-bold text-amber-300">{String(timeLeft.seconds || 0).padStart(2, '0')}</div>
-                  <div className="text-xs text-gray-400 mt-1">Seconds</div>
+                {/* Countdown Timer */}
+                <div className="p-8 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-2xl">
+                  <h3 className="text-2xl font-bold text-amber-300 mb-8 text-center">Time Until Reveal</h3>
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="bg-black/40 rounded-lg p-6 text-center backdrop-blur-sm">
+                      <div className="text-4xl font-bold text-amber-300">{String(timeLeft.days || 0).padStart(2, '0')}</div>
+                      <div className="text-sm text-gray-400 mt-2">Days</div>
+                    </div>
+                    <div className="bg-black/40 rounded-lg p-6 text-center backdrop-blur-sm">
+                      <div className="text-4xl font-bold text-amber-300">{String(timeLeft.hours || 0).padStart(2, '0')}</div>
+                      <div className="text-sm text-gray-400 mt-2">Hours</div>
+                    </div>
+                    <div className="bg-black/40 rounded-lg p-6 text-center backdrop-blur-sm">
+                      <div className="text-4xl font-bold text-amber-300">{String(timeLeft.minutes || 0).padStart(2, '0')}</div>
+                      <div className="text-sm text-gray-400 mt-2">Minutes</div>
+                    </div>
+                    <div className="bg-black/40 rounded-lg p-6 text-center backdrop-blur-sm">
+                      <div className="text-4xl font-bold text-amber-300">{String(timeLeft.seconds || 0).padStart(2, '0')}</div>
+                      <div className="text-sm text-gray-400 mt-2">Seconds</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Header */}
-          <header className="text-center mb-12">
-            <p className="text-sm uppercase tracking-[0.35em] text-cyan-200/80 mb-2">Projects Dock</p>
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">🚀 Open Source Projects</h1>
-            <p className="text-gray-300 max-w-2xl mx-auto">
-              Explore projects, find issues to work on, and start contributing to open source.
-            </p>
-          </header>
+          ) : (
+            <div className="w-full">
+              {/* Header */}
+              <header className="text-center mb-12">
+                <p className="text-sm uppercase tracking-[0.35em] text-cyan-200/80 mb-2">Projects Dock</p>
+                <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">🚀 Open Source Projects</h1>
+                <p className="text-gray-300 max-w-2xl mx-auto">
+                  Explore projects, find issues to work on, and start contributing to open source.
+                </p>
+              </header>
 
           {/* My Projects Section (for Mentors/Admins) */}
           {isMentorOrAdmin && (
@@ -647,6 +639,8 @@ const Projects = () => {
                 </div>
               )}
             </>
+          )}
+            </div>
           )}
         </main>
       </div>
