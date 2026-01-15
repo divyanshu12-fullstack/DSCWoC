@@ -331,7 +331,7 @@ const RewardsSection = () => {
             </div>
 
             {/* Mobile Prize Pool */}
-            <div className="relative bg-gradient-to-r from-indigo-900/70 via-purple-900/70 to-pink-900/70 border-2 border-purple-400/80 rounded-lg p-4 text-center mb-8 backdrop-blur-sm">
+            <div className="relative bg-gradient-to-r from-indigo-900/70 via-purple-800/70 to-pink-900/70 border border-white/20 rounded-xl p-5 text-center mb-8 shadow-lg shadow-purple-900/40">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Orbit className="w-5 h-5 text-yellow-400 animate-spin" style={{ animationDuration: '20s' }} />
                 <h3 className="text-lg font-bold text-white">Prize Pool</h3>
@@ -350,7 +350,7 @@ const RewardsSection = () => {
                 {rewardTypes.map((reward, index) => (
                   <div
                     key={index}
-                    className="bg-gradient-to-br from-white/5 to-white/10 border border-white/20 rounded-lg p-3 text-center transition-all active:scale-95 w-40 min-h-32 flex flex-col items-center justify-center"
+                    className="bg-gradient-to-br from-white/10 to-white/5 border border-white/15 rounded-lg p-3 text-center transition-all active:scale-95 w-40 min-h-32 flex flex-col items-center justify-center shadow-md shadow-purple-900/40"
                   >
                     <reward.icon className="w-6 h-6 text-purple-400 mx-auto mb-2" />
                     <p className="text-xs text-white font-semibold line-clamp-2">{reward.label}</p>
@@ -362,15 +362,15 @@ const RewardsSection = () => {
             {/* Mobile Tiers - Full height cards with all rewards */}
             <div className="mb-8">
               <h3 className="text-sm font-bold text-yellow-400 mb-4 text-center">Achievement Tiers</h3>
-              <div className="space-y-4">
+              <div className="space-y-4 max-w-md mx-auto w-full px-2">
                 {leaderboardTiers.map((tier, index) => (
                   <div
                     key={index}
-                    className={`rounded-lg p-4 backdrop-blur-sm border transition-all ${tier.isGold
-                      ? 'bg-yellow-900/60 border-yellow-400/80'
+                    className={`w-full rounded-xl p-4 border shadow-lg transition-all active:scale-[0.99] ${tier.isGold
+                      ? 'bg-gradient-to-br from-yellow-800/70 to-amber-700/60 border-yellow-300/60 shadow-amber-900/50'
                       : tier.isSilver
-                        ? 'bg-slate-800/60 border-slate-400/80'
-                        : 'bg-orange-900/60 border-orange-400/80'
+                        ? 'bg-gradient-to-br from-slate-800/70 to-gray-700/60 border-slate-200/50 shadow-slate-900/50'
+                        : 'bg-gradient-to-br from-orange-800/70 to-amber-700/60 border-orange-300/60 shadow-orange-900/50'
                       }`}
                   >
                     {/* Tier header */}
@@ -391,11 +391,11 @@ const RewardsSection = () => {
                     </div>
 
                     {/* All Tier rewards */}
-                    <div className="space-y-2 text-xs">
+                    <div className="space-y-2 text-xs text-gray-100">
                       {tier.rewards.map((reward, rewardIndex) => (
-                        <div key={rewardIndex} className="flex items-start gap-2 text-gray-300">
-                          <reward.icon className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                          <span>{reward.text}</span>
+                        <div key={rewardIndex} className="flex items-start gap-2">
+                          <reward.icon className="w-3 h-3 flex-shrink-0 mt-0.5 text-white/90" />
+                          <span className="leading-snug">{reward.text}</span>
                         </div>
                       ))}
                     </div>
@@ -680,6 +680,7 @@ const RewardsSection = () => {
                 <Sparkles className="w-4 h-4 text-blue-400" />
               </p>
             </div>
+
           </>
         )}
       </div>
