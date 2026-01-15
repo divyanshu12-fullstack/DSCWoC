@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Loader2, Download, X, AlertCircle, CheckCircle2, Ticket } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || 
   (window.location.hostname === 'localhost' 
@@ -116,19 +117,22 @@ export function IDCardGenerator({ user, isOpen, onClose }) {
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-gradient-to-br from-space-black via-midnight-blue to-space-black border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/20 w-full max-w-md animate-scaleIn">
           
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-cyan-500/20">
-            <div>
-              <h2 className="text-xl font-bold text-white">📋 Generate ID Card</h2>
-              <p className="text-cyan-400 text-xs mt-1">Quick ID generation</p>
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-cyan-500/20">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Ticket className="w-5 h-5" />
+                  Generate ID Card
+                </h2>
+                <p className="text-cyan-400 text-xs mt-1">Quick ID generation</p>
+              </div>
+              <button
+                onClick={handleClose}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500/20 text-white hover:text-red-400 transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              onClick={handleClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500/20 text-white hover:text-red-400 transition-all"
-            >
-              ✕
-            </button>
-          </div>
 
           {/* Content */}
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -163,57 +167,44 @@ export function IDCardGenerator({ user, isOpen, onClose }) {
                 />
               </div>
               {file && (
-                <p className="text-xs text-emerald-400">✓ {file.name}</p>
+                <p className="text-xs text-emerald-400 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  {file.name}
+                </p>
               )}
               <p className="text-xs text-gray-400">JPG or PNG, max 2MB</p>
             </div>
 
             {/* Stats */}
-            {generationsLeft > 0 && (
-              <div className="bg-white/5 rounded-lg p-3 border border-amber-500/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-amber-400">⏳ Generations Left</span>
-                  <span className="text-sm font-bold text-amber-400">{generationsLeft}/2</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-1.5 mt-2">
-                  <div 
-                    className="bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full transition-all"
-                    style={{ width: `${(generationsLeft / 2) * 100}%` }}
-                  />
-                </div>
-              </div>
-            )}
+            {/* Generation counter hidden from user view */}
 
             {/* Messages */}
             {error && (
-              <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-200">
-                ⚠️ {error}
+              <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-200 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {error}
               </div>
             )}
             {success && !showPreview && (
-              <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 text-xs text-emerald-200">
-                ✨ {success}
+              <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 text-xs text-emerald-200 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                {success}
               </div>
             )}
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || generationsLeft <= 0}
+              disabled={loading}
               className="w-full inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 px-4 py-2.5 font-semibold text-white text-sm shadow-lg hover:shadow-cyan-500/50 hover:from-cyan-600 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                  </svg>
+                  <Loader2 className="animate-spin h-4 w-4" />
                   Generating...
                 </>
-              ) : generationsLeft <= 0 ? (
-                <>⛔ Limit Reached</>
               ) : (
-                <>🎨 Generate ID Card</>
+                <>Generate ID Card</>
               )}
             </button>
 
@@ -235,14 +226,12 @@ export function IDCardGenerator({ user, isOpen, onClose }) {
               className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500/20 border border-white/20 hover:border-red-500/50 text-white hover:text-red-400 transition-all group"
               aria-label="Close preview"
             >
-              <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </button>
 
             {/* Header */}
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-b border-cyan-500/30 px-6 py-4">
-              <h2 className="text-2xl font-bold text-white">🎉 Your ID Card is Ready!</h2>
+              <h2 className="text-2xl font-bold text-white">Your ID Card is Ready!</h2>
               <p className="text-cyan-400 text-sm mt-1">
                 {detectedRole && `Generated as ${detectedRole}`}
               </p>
@@ -265,9 +254,7 @@ export function IDCardGenerator({ user, isOpen, onClose }) {
                 onClick={handleDownload}
                 className="flex-1 inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 px-4 py-2 font-semibold text-white text-sm shadow-lg hover:shadow-cyan-500/50 hover:from-cyan-600 hover:to-cyan-700 transition-all"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
+                <Download className="w-4 h-4" />
                 Download
               </button>
               <button

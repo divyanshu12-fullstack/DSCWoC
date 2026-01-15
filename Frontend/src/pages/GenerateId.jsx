@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Starfield from '../components/Starfield';
+import { Loader2, Download, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 // Use localhost for development, Railway for production
 const API_BASE = import.meta.env.VITE_API_URL || 
@@ -174,22 +175,10 @@ const GenerateId = () => {
                 </div>
                 {detectedRole && (
                   <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-lg p-4">
-                    <h3 className="text-cyan-400 font-semibold mb-2">🎯 Your Role</h3>
+                    <h3 className="text-cyan-400 font-semibold mb-2">Your Role</h3>
                     <p className="text-white text-lg font-bold">{detectedRole}</p>
                   </div>
                 )}
-                <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-lg p-4">
-                  <h3 className="text-amber-400 font-semibold mb-2">⏳ Generations Left</h3>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-white/10 rounded-full h-2">
-                      <div 
-                        className="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full transition-all"
-                        style={{ width: `${(generationsLeft / 2) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-white font-bold text-lg">{generationsLeft}/2</span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -274,36 +263,31 @@ const GenerateId = () => {
                   </div>
 
                   {error && (
-                    <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-200 flex items-start gap-3">
-                      <span className="text-lg mt-0.5">⚠️</span>
+                    <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-200 flex items-center gap-3">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
                       <span>{error}</span>
                     </div>
                   )}
                   {success && !showPreview && (
-                    <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-sm text-emerald-200 flex items-start gap-3">
-                      <span className="text-lg mt-0.5">✨</span>
+                    <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 text-sm text-emerald-200 flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
                       <span>{success}</span>
                     </div>
                   )}
 
                   <button
                     type="submit"
-                    disabled={loading || generationsLeft <= 0}
+                    disabled={loading}
                     className="w-full inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 px-6 py-3 font-semibold text-white shadow-lg hover:shadow-cyan-500/50 hover:from-cyan-600 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-200"
                   >
                     {loading ? (
                       <>
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                        </svg>
+                        <Loader2 className="animate-spin h-5 w-5" />
                         Generating your ID...
                       </>
-                    ) : generationsLeft <= 0 ? (
-                      <>⛔ Generation Limit Reached</>
                     ) : (
                       <>
-                        🎨 Generate ID Card
+                        Generate ID Card
                       </>
                     )}
                   </button>
@@ -324,22 +308,17 @@ const GenerateId = () => {
               className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500/20 border border-white/20 hover:border-red-500/50 text-white hover:text-red-400 transition-all duration-200 group"
               aria-label="Close preview"
             >
-              <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
             </button>
 
             {/* Header */}
             <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-b border-cyan-500/30 px-8 py-6">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">🎉</span>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Your ID Card is Ready!</h2>
-                  <p className="text-cyan-400 text-sm mt-1">
-                    {detectedRole && `Generated as ${detectedRole} • `}
-                    High quality • Ready to download
-                  </p>
-                </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Your ID Card is Ready!</h2>
+                <p className="text-cyan-400 text-sm mt-1">
+                  {detectedRole && `Generated as ${detectedRole} • `}
+                  High quality • Ready to download
+                </p>
               </div>
             </div>
 
@@ -360,9 +339,7 @@ const GenerateId = () => {
                 onClick={handleDownload}
                 className="flex-1 inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 px-6 py-3 font-semibold text-white shadow-lg hover:shadow-cyan-500/50 hover:from-cyan-600 hover:to-cyan-700 transition-all duration-200"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
+                <Download className="w-5 h-5" />
                 Download High Quality PNG
               </button>
               <button
