@@ -146,20 +146,6 @@ const Home = () => {
             <div ref={ctaRef} className="min-h-[420px]">
               {ctaVisible ? <CTASection /> : <SectionSkeleton className="h-[420px]" />}
             </div>
-
-            {/* Temporary: testing CTA for ID card generation */}
-            <div className="px-6 pb-10">
-              <div className="rounded-2xl border border-slate-800 bg-white/5 backdrop-blur p-6 text-center">
-                <p className="text-sm text-slate-200 mb-3">Testing: generate your DSWC ID card</p>
-                <Link
-                  to="/generate-id"
-                  className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-cyan-500/30 transition"
-                >
-                  Generate ID Card
-                </Link>
-              </div>
-            </div>
-
             <Footer />
           </div>
         </div>

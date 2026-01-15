@@ -81,7 +81,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-cosmic-purple/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-gray-400 text-sm text-center sm:text-left">
-            © 2025 DSC Community. All rights reserved. Built with 💜 for open source.
+            © 2026 Data Science Club. All rights reserved. Crafted with 💜 by the Technical Team for open source innovation.
           </p>
         </div>
       </div>
