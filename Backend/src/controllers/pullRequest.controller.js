@@ -418,3 +418,23 @@ export const getRecentPullRequests = asyncHandler(async (req, res) => {
     data: pullRequests,
   });
 });
+
+/**
+ * @desc    Get recent pull requests
+ * @route   GET /api/v1/pull-requests/recent
+ * @access  Contributors
+ */
+export const getContributorjoinedProjects = asyncHandler(async (req, res) => {
+
+  const pullRequests = await PullRequest.find({ user: req.params.userId })
+    .populate('project', 'name description github_url tags stats difficulty')
+    .sort({ 'github_data.created_at': -1 })
+    .select('project -_id')
+    .lean();
+  
+  res.status(HTTP_STATUS.OK).json({
+    status: 'success',
+    results: pullRequests.length,
+    data: pullRequests,
+  });
+});

@@ -15,6 +15,8 @@ router.get('/username/:username', userController.getUserByUsername);
 
 // Protected routes - must come BEFORE /:id route
 router.get('/me', authenticate, userController.getMe);
+router.get('/me/badges', authenticate, userController.getUserBadges);
+router.get('/me/points', authenticate, userController.getUserPoints);
 router.put('/:id', authenticate, userController.updateUser);
 
 // Public routes with :id parameter

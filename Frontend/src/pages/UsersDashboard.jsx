@@ -18,6 +18,7 @@ import {
   useLeaderboard,
   useUserDashboardData,
   useUserPullRequests,
+  useUserJoinedProjects
 } from "../hooks/useApi.js";
 
 /* -------------------------------- Utilities -------------------------------- */
@@ -50,6 +51,8 @@ export default function Dashboard() {
     data: pullRequestsData,
     isLoading: isPullRequestsLoading,
   } = useUserPullRequests(data?.data?._id, { enabled: !!data?.data?._id });
+
+  const { data: joinedProjectsData, isLoading: isJoinedProjectsLoading } = useUserJoinedProjects(data?.data?._id, { enabled: !!data?.data?._id });
 
   const clearAuthAndRedirect = useCallback(() => {
     localStorage.removeItem("user");
@@ -190,7 +193,7 @@ export default function Dashboard() {
           {/* Content Grid */}
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
-              <JoinedProjects projects={userProjects} isLoading={false} />
+              <JoinedProjects projects={joinedProjectsData?.data} isLoading={isJoinedProjectsLoading}/>
               <PullRequestsTable
                 pullRequests={pullRequestsData?.data.map((pr) => ({
                   id: pr.github_pr_id,

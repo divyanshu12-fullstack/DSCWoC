@@ -1,21 +1,17 @@
 import { useState, useRef } from "react";
 import { Star, GitFork, ExternalLink, Code2, FolderKanban, ChevronLeft, ChevronRight } from "lucide-react";
 
-const languageColors = {
-  TypeScript: "bg-star-blue",
-  JavaScript: "bg-supernova-orange",
-  Python: "bg-galaxy-violet",
-  Go: "bg-stellar-cyan",
-  Rust: "bg-nebula-pink",
+const difficultyColors = {
+  Beginner: "bg-green-500",
+  Intermediate: "bg-yellow-500",
+  Advanced: "bg-red-500",
 };
 
 function ProjectSkeleton() {
   return (
-    <div className="glass-card p-4 md:p-5 animate-pulse min-w-[260px] md:min-w-[300px] flex-shrink-0">
-      <div className="flex items-start justify-between mb-2 md:mb-3">
-        <div className="w-28 md:w-32 h-4 md:h-5 bg-muted rounded" />
-        <div className="w-14 md:w-16 h-4 md:h-5 bg-muted rounded" />
-      </div>
+    <div className="glass-card p-4 md:p-5 animate-pulse w-[260px] md:w-[300px] flex-shrink-0">
+      <div className="w-28 md:w-32 h-4 md:h-5 bg-muted rounded" />
+      <div className="w-14 md:w-16 h-4 md:h-5 bg-muted rounded" />
       <div className="w-full h-3 md:h-4 bg-muted rounded mb-3 md:mb-4" />
       <div className="flex gap-2 mb-3 md:mb-4">
         <div className="w-14 md:w-16 h-5 md:h-6 bg-muted rounded-full" />
@@ -88,7 +84,7 @@ export function JoinedProjects({ projects, isLoading }) {
     });
   };
 
-  if (isLoading) {
+  if (isLoading && !projects) {
     return (
       <div className="space-y-3 md:space-y-4">
         <h2 className="text-lg md:text-xl font-semibold text-foreground flex items-center gap-2">
@@ -154,56 +150,63 @@ export function JoinedProjects({ projects, isLoading }) {
         onTouchMove={handleTouchMove}
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {projects.map((project) => (
-          <div
-            key={project.id}
-            className="glass-card p-4 md:p-5 glow-border group hover:bg-card/90 transition-all duration-300 min-w-[260px] md:min-w-[300px] flex-shrink-0 select-none"
-          >
-            <div className="flex items-start justify-between mb-2 md:mb-3">
-              <div className="flex items-center gap-1.5 md:gap-2">
-                <span className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${languageColors[project.language] || "bg-muted"}`} />
-                <h3 className="text-sm md:text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                  {project.name}
-                </h3>
-              </div>
-              <a
-                href={`https://github.com/${project.owner}/${project.name}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1 md:p-1.5 rounded-md hover:bg-muted transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <ExternalLink className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground" />
-              </a>
-            </div>
-
-            <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-3 md:mb-4">
-              {project.description}
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
-              {project.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-2 md:px-2.5 py-0.5 md:py-1 text-[10px] md:text-xs rounded-full bg-muted text-muted-foreground"
+        {projects.map((item) => {
+          const project = item.project;
+          return (
+            <div
+              key={project._id}
+              className="glass-card p-4 md:p-5 glow-border group hover:bg-card/90 transition-all duration-300 w-[260px] md:w-[300px] flex-shrink-0 select-none"
+            >
+              <div className="flex items-start justify-between mb-2 md:mb-3">
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  <span className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${difficultyColors[project.difficulty] || 'bg-muted'}`} />
+                  <h3 className="text-sm md:text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {project.name}
+                  </h3>
+                </div>
+                <a
+                  href={project.github_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1 md:p-1.5 rounded-md hover:bg-muted transition-colors z-10"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  {tag}
-                </span>
-              ))}
-            </div>
+                  <ExternalLink className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground" />
+                </a>
+              </div>
 
-            <div className="flex items-center gap-3 md:gap-4 text-xs md:text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Star className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                {project.stars.toLocaleString()}
-              </span>
-              <span className="flex items-center gap-1">
-                <GitFork className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                {project.openIssues} open issues
-              </span>
+              <p className="text-xs md:text-sm text-muted-foreground mb-1">
+                Difficulty: {project.difficulty || 'Unknown'}
+              </p>
+
+              <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-3 md:mb-4">
+                {project.description}
+              </p>
+
+              <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
+                {project.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2 md:px-2.5 py-0.5 md:py-1 text-[10px] md:text-xs rounded-full bg-muted text-muted-foreground"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3 md:gap-4 text-xs md:text-sm text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Star className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                  {project.stats.stars.toLocaleString()}
+                </span>
+                <span className="flex items-center gap-1">
+                  <GitFork className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                  {project.stats.forks} forks
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

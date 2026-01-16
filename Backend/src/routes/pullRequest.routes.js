@@ -10,6 +10,7 @@ router.get('/recent', pullRequestController.getRecentPullRequests);
 router.get('/:id', pullRequestController.getPullRequest);
 router.get('/user/:userId', pullRequestController.getUserPullRequests);
 router.get('/project/:projectId', pullRequestController.getProjectPullRequests);
+router.get('/joinedprojects/:userId', pullRequestController.getContributorjoinedProjects);
 
 // Protected routes - Mentor/Admin only
 router.post(

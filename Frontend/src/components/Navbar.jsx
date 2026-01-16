@@ -197,19 +197,12 @@ const Navbar = () => {
 
         {/* Desktop User Section */}
         <div className="hidden md:flex items-center space-x-4">
-          {user ? (
+          {user && (
             <button
               onClick={handleLogout}
               className="retro-button border-2 border-nebula-pink text-white hover:bg-nebula-pink/15 px-5 py-2 rounded-full font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-nebula-pink/40 hover:-translate-y-0.5 cosmic-glow"
             >
               LOGOUT
-            </button>
-          ) : (
-            <button
-              onClick={handleDashboardClick}
-              className="retro-button border-2 border-cosmic-purple text-white hover:bg-cosmic-purple/15 px-6 py-2 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-cosmic-purple/20 hover:shadow-xl hover:shadow-cosmic-purple/45 hover:-translate-y-0.5 cosmic-glow"
-            >
-              DASHBOARD
             </button>
           )}
         </div>

@@ -68,6 +68,7 @@ const GenerateId = () => {
   const [idCardImage, setIdCardImage] = useState('');
   const [detectedRole, setDetectedRole] = useState('');
   const [generationsLeft, setGenerationsLeft] = useState(2);
+  const [downloading, setDownloading] = useState(false);
 
   const onFileChange = (e) => {
     setFile(e.target.files?.[0] || null);
@@ -184,13 +185,24 @@ const GenerateId = () => {
     }
   };
 
-  const handleDownload = () => {
-    const a = document.createElement('a');
-    a.href = idCardImage;
-    a.download = `DSCWoC_2026_${detectedRole || 'ID'}_Card.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      // Small delay to show feedback
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const a = document.createElement('a');
+      a.href = idCardImage;
+      a.download = `DSCWoC_2026_${detectedRole || 'ID'}_Card.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      
+      // Keep loading state for a moment so user sees the feedback
+      await new Promise(resolve => setTimeout(resolve, 300));
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleClosePreview = useCallback(() => {
@@ -382,11 +394,18 @@ const GenerateId = () => {
                       </>
                     )}
                   </button>
+
+                  {loading && (
+                    <div className="rounded-lg bg-cyan-500/10 border border-cyan-500/30 px-4 py-3 text-sm text-cyan-200 flex items-center gap-3 animate-pulse">
+                      <Loader2 className="w-5 h-5 animate-spin flex-shrink-0" />
+                      <span>Your ID card is being generated, please wait...</span>
+                    </div>
+                  )}
                 </form>
               </div>
             </div>
           </div>
-        </main>
+        </main>flex flex-col max-h-[calc(100vh-2
       </div>
 
       {/* Preview Modal */}
@@ -410,7 +429,7 @@ const GenerateId = () => {
               </button>
 
               {/* Header */}
-              <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-b border-cyan-500/30 px-8 py-6">
+              <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-b border-cyan-500/30 px-8 py-6 flex-shrink-0">
                 <div>
                   <h2 className="text-2xl font-bold text-white">Your ID Card is Ready!</h2>
                   <p className="text-cyan-400 text-sm mt-1">
@@ -421,24 +440,34 @@ const GenerateId = () => {
               </div>
 
               {/* ID Card Preview */}
-              <div className="p-8 overflow-hidden">
-                <div className="relative bg-white/5 rounded-xl p-4 border border-white/10 max-h-[calc(100vh-16rem)] overflow-hidden">
+              <div className="p-8 overflow-y-auto flex-1">
+                <div className="relative bg-white/5 rounded-xl p-4 border border-white/10">
                   <img
                     src={idCardImage}
                     alt="Generated ID Card"
-                    className="w-full h-auto rounded-lg shadow-2xl object-contain max-h-[calc(100vh-18rem)]"
+                    className="w-full h-auto rounded-lg shadow-2xl object-contain"
                   />
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="border-t border-white/10 px-8 py-6 flex gap-4">
+              <div className="border-t border-white/10 px-8 py-6 flex gap-4 flex-shrink-0">
                 <button
                   onClick={handleDownload}
-                  className="flex-1 inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 px-6 py-3 font-semibold text-white shadow-lg hover:shadow-cyan-500/50 hover:from-cyan-600 hover:to-cyan-700 transition-all duration-200"
+                  disabled={downloading}
+                  className="flex-1 inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 px-6 py-3 font-semibold text-white shadow-lg hover:shadow-cyan-500/50 hover:from-cyan-600 hover:to-cyan-700 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-none transition-all duration-200"
                 >
-                  <Download className="w-5 h-5" />
-                  Download High Quality PNG
+                  {downloading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5" />
+                      Download High Quality PNG
+                    </>
+                  )}
                 </button>
               </div>
             </div>

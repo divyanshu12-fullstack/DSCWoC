@@ -65,7 +65,6 @@ export default function EventCountdown({
           </div>
         ) : (
           <div className="text-center">
-
           </div>
         )}
       </div>

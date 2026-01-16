@@ -38,7 +38,7 @@ export const getOverview = async (req, res) => {
 
     // Badges issued
     const totalBadgesIssued = await User.aggregate([
-      { $project: { badgeCount: { $size: { $ifNull: ['$badges', []] } } } },
+      { $project: { badgeCount: { $size: { $ifNull: [{ $ifNull: ['$badges', []] }, []] } } } },
       { $group: { _id: null, total: { $sum: '$badgeCount' } } }
     ]);
     const badgesIssued = totalBadgesIssued[0]?.total || 0;
@@ -685,28 +685,15 @@ export const getAllPRs = async (req, res) => {
 
     const total = await PullRequest.countDocuments(filter);
 
-    // Map to expected format
-    const mappedPRs = prs.map(pr => ({
-      _id: pr._id,
-      prNumber: pr.github_pr_number,
-      title: pr.title,
-      prLink: pr.github_url,
-      status: pr.status === 'merged' ? 'Merged' : pr.status === 'open' ? 'Pending' : 'Rejected',
-      pointsAwarded: pr.points || 0,
-      contributor: pr.user ? { username: pr.user.github_username } : null,
-      project: pr.project ? { name: pr.project.name } : null,
-      createdAt: pr.createdAt
-    }));
-
-    successResponse(res, {
-      prs: mappedPRs,
+    res.json(successResponse({
+      prs,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
         total,
         pages: Math.ceil(total / parseInt(limit))
       }
-    }, 'Pull requests fetched successfully');
+    }, 'Pull requests fetched successfully'))
 
   } catch (error) {
     logger.error('Error fetching PRs:', error);

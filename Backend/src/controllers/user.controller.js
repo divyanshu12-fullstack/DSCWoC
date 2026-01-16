@@ -1,6 +1,4 @@
-import mongoose from 'mongoose';
 import User from '../models/User.model.js';
-import Badge from '../models/Badge.model.js';
 import PullRequest from '../models/PullRequest.model.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { successResponse, paginatedResponse } from '../utils/response.js';
