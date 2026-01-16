@@ -115,8 +115,8 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-          ? 'glass-effect shadow-lg shadow-cosmic-purple/10'
-          : 'bg-transparent'
+        ? 'glass-effect shadow-lg shadow-cosmic-purple/10'
+        : 'bg-transparent'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between">
@@ -202,15 +202,21 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <>
           {/* Overlay to prevent body scroll */}
-          <div className="fixed inset-0 bg-black/50 md:hidden" style={{ top: '64px', zIndex: 40 }} />
+          <div
+            className="fixed inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/95 md:hidden"
+            style={{ top: '64px', zIndex: 40 }}
+          />
 
-          <div className="md:hidden glass-effect border-t border-cosmic-purple/20 absolute top-full left-0 right-0 w-screen" style={{ zIndex: 45 }}>
-            <div className="px-4 py-4 space-y-3">
+          <div
+            className="md:hidden glass-effect glass-panel mobile-menu-panel absolute top-full left-0 right-0 w-screen"
+            style={{ zIndex: 45 }}
+          >
+            <div className="px-4 pb-4 pt-2 space-y-3">
               {navItems.map((item) => (
                 <button
                   key={item.name}
                   onClick={() => handleNavClick(item)}
-                  className="block w-full text-left text-gray-300 hover:text-cosmic-purple transition-colors duration-200 py-2 px-3 rounded-lg hover:bg-cosmic-purple/10"
+                  className="block w-full text-left menu-item hover:text-cosmic-purple transition-colors duration-200 py-3 px-3 rounded-lg hover:bg-white/10"
                 >
                   {item.name}
                 </button>
