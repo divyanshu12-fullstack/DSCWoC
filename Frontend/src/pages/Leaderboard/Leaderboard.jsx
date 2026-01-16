@@ -13,7 +13,8 @@ const Starfield = lazy(() => import('../../components/Starfield'));
 
 // Constants for pagination
 const ITEMS_PER_PAGE = 30;
-const LAUNCH_DATE = new Date('2026-01-16T15:30:00Z'); // 9:00 PM IST
+const LAUNCH_DATE = new Date('2026-01-18T06:30:00Z'); // 12:00 PM IST
+
 
 const formatLeaderboardDateTime = (date) => {
     try {
