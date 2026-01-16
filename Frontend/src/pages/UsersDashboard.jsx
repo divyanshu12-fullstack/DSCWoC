@@ -2,7 +2,7 @@ import { useEffect, useMemo, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Starfield from "../components/Starfield.jsx";
-import { DashboardHeader } from "../components/usersDashboard/DashboardHeader.jsx";
+import Navbar from "../components/Navbar.jsx";
 import { ProfileSection } from "../components/usersDashboard/ProfileSection.jsx";
 import { StatsOverview } from "../components/usersDashboard/StatsOverview.jsx";
 import { JoinedProjects } from "../components/usersDashboard/JoinedProjects.jsx";
@@ -155,9 +155,11 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Starfield />
 
-      <DashboardHeader avatar={user.avatar_url} />
+      <div className="relative z-10">
+        <Navbar />
+      </div>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pt-20 sm:pt-24">
         <div className="space-y-8 animate-fade-in">
           {/* Event Countdown */}
           <EventCountdown

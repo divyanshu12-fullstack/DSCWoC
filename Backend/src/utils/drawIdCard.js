@@ -78,7 +78,12 @@ export async function drawIdCard({ templatePath, photoBuffer, qrBuffer, user }) 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   ctx.globalAlpha = 1.0;
-  ctx.fillStyle = '#FFFFFF'; // White text
+  
+  // Set text color based on role for readability
+  // Admin and Mentor templates have white backgrounds, use black text
+  // Contributor template has dark background, use white text
+  const textColor = (user.role === 'Admin' || user.role === 'Mentor') ? '#000000' : '#FFFFFF';
+  ctx.fillStyle = textColor;
 
   // Helper to fit text
   const fitText = (text, maxWidth, maxSize, minSize) => {

@@ -36,7 +36,8 @@ import {
 } from '../controllers/contact.controller.js';
 import {
   importProjects,
-  getImportTemplate
+  getImportTemplate,
+  importUsers
 } from '../controllers/import.controller.js';
 
 const router = express.Router();
@@ -49,6 +50,7 @@ router.get('/overview', getOverview);
 
 // ==================== IMPORT FROM SHEET ====================
 router.post('/import/projects', importProjects);
+router.post('/import/users', importUsers);
 router.get('/import/template', getImportTemplate);
 
 // ==================== USER MANAGEMENT ====================

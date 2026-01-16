@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Starfield from '../components/Starfield';
 import { Loader2, Download, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 // Use localhost for development, Railway for production
-const API_BASE = import.meta.env.VITE_API_URL || 
-  (window.location.hostname === 'localhost' 
+const API_BASE = import.meta.env.VITE_API_URL ||
+  (window.location.hostname === 'localhost'
     ? 'http://localhost:5000/api/v1'
     : 'https://dscwoc-production.up.railway.app/api/v1');
 
@@ -19,7 +19,7 @@ const sanitizeInput = (input) => {
 const extractGithubUsername = (input) => {
   if (!input) return '';
   const sanitized = sanitizeInput(input);
-  
+
   // Check if it's a URL
   if (sanitized.includes('github.com/')) {
     try {
@@ -30,7 +30,7 @@ const extractGithubUsername = (input) => {
       return sanitized;
     }
   }
-  
+
   // Return as-is if it's already just a username
   return sanitized;
 };
@@ -38,7 +38,7 @@ const extractGithubUsername = (input) => {
 const extractLinkedinUsername = (input) => {
   if (!input) return '';
   const sanitized = sanitizeInput(input);
-  
+
   // Check if it's a URL
   if (sanitized.includes('linkedin.com/')) {
     try {
@@ -49,7 +49,7 @@ const extractLinkedinUsername = (input) => {
       return sanitized;
     }
   }
-  
+
   // Return as-is if it's already just a username
   return sanitized;
 };
@@ -156,14 +156,14 @@ const GenerateId = () => {
           if (msg?.generationsLeft !== undefined) {
             setGenerationsLeft(msg.generationsLeft);
           }
-        } catch (e) {}
+        } catch (e) { }
         throw new Error(errMsg);
       }
 
       // Get role from response headers
       const role = res.headers.get('X-User-Role') || 'Contributor';
       const genLeft = res.headers.get('X-Generations-Left');
-      
+
       setDetectedRole(role);
       if (genLeft) {
         setGenerationsLeft(parseInt(genLeft));
@@ -171,12 +171,12 @@ const GenerateId = () => {
 
       const blob = await res.blob();
       const imageUrl = URL.createObjectURL(blob);
-      
+
       // Show preview modal instead of instant download
       setIdCardImage(imageUrl);
       setShowPreview(true);
       setSuccess('✅ ID card generated successfully!');
-      
+
     } catch (err) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -193,17 +193,29 @@ const GenerateId = () => {
     a.remove();
   };
 
-  const handleClosePreview = () => {
+  const handleClosePreview = useCallback(() => {
     setShowPreview(false);
-    URL.revokeObjectURL(idCardImage);
+    if (idCardImage) {
+      URL.revokeObjectURL(idCardImage);
+    }
     setIdCardImage('');
-    // Reset form
     setName('');
     setEmail('');
     setGithubId('');
     setLinkedinId('');
     setFile(null);
-  };
+  }, [idCardImage]);
+
+  useEffect(() => {
+    if (!showPreview) return;
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        handleClosePreview();
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [showPreview, handleClosePreview]);
 
   return (
     <div className="min-h-screen relative bg-gradient-to-br from-space-black via-midnight-blue to-space-black">
@@ -379,48 +391,56 @@ const GenerateId = () => {
 
       {/* Preview Modal */}
       {showPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="relative max-w-4xl w-full bg-gradient-to-br from-space-black via-midnight-blue to-space-black border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/20 overflow-hidden animate-scaleIn">
-            {/* Close Button */}
-            <button
-              onClick={handleClosePreview}
-              className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500/20 border border-white/20 hover:border-red-500/50 text-white hover:text-red-400 transition-all duration-200 group"
-              aria-label="Close preview"
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm animate-fadeIn"
+          onClick={handleClosePreview}
+        >
+          <div className="flex min-h-[100dvh] items-center justify-center px-4 py-6">
+            <div
+              className="relative max-w-4xl w-full bg-gradient-to-br from-space-black via-midnight-blue to-space-black border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/20 overflow-hidden animate-scaleIn max-h-[calc(100vh-4rem)]"
+              onClick={(event) => event.stopPropagation()}
             >
-              <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </button>
-
-            {/* Header */}
-            <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-b border-cyan-500/30 px-8 py-6">
-              <div>
-                <h2 className="text-2xl font-bold text-white">Your ID Card is Ready!</h2>
-                <p className="text-cyan-400 text-sm mt-1">
-                  {detectedRole && `Generated as ${detectedRole} • `}
-                  High quality • Ready to download
-                </p>
-              </div>
-            </div>
-
-            {/* ID Card Preview */}
-            <div className="p-8">
-              <div className="relative bg-white/5 rounded-xl p-4 border border-white/10">
-                <img
-                  src={idCardImage}
-                  alt="Generated ID Card"
-                  className="w-full h-auto rounded-lg shadow-2xl"
-                />
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="border-t border-white/10 px-8 py-6 flex gap-4">
+              {/* Close Button */}
               <button
-                onClick={handleDownload}
-                className="flex-1 inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 px-6 py-3 font-semibold text-white shadow-lg hover:shadow-cyan-500/50 hover:from-cyan-600 hover:to-cyan-700 transition-all duration-200"
+                onClick={handleClosePreview}
+                className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500/20 border border-white/20 hover:border-red-500/50 text-white hover:text-red-400 transition-all duration-200 group"
+                aria-label="Close preview"
               >
-                <Download className="w-5 h-5" />
-                Download High Quality PNG
+                <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </button>
+
+              {/* Header */}
+              <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-b border-cyan-500/30 px-8 py-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Your ID Card is Ready!</h2>
+                  <p className="text-cyan-400 text-sm mt-1">
+                    {detectedRole && `Generated as ${detectedRole} • `}
+                    High quality • Ready to download
+                  </p>
+                </div>
+              </div>
+
+              {/* ID Card Preview */}
+              <div className="p-8 overflow-hidden">
+                <div className="relative bg-white/5 rounded-xl p-4 border border-white/10 max-h-[calc(100vh-16rem)] overflow-hidden">
+                  <img
+                    src={idCardImage}
+                    alt="Generated ID Card"
+                    className="w-full h-auto rounded-lg shadow-2xl object-contain max-h-[calc(100vh-18rem)]"
+                  />
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="border-t border-white/10 px-8 py-6 flex gap-4">
+                <button
+                  onClick={handleDownload}
+                  className="flex-1 inline-flex justify-center items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 px-6 py-3 font-semibold text-white shadow-lg hover:shadow-cyan-500/50 hover:from-cyan-600 hover:to-cyan-700 transition-all duration-200"
+                >
+                  <Download className="w-5 h-5" />
+                  Download High Quality PNG
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -443,6 +463,7 @@ const GenerateId = () => {
         }
       `}</style>
     </div>
-  );};
+  );
+};
 
 export default GenerateId;

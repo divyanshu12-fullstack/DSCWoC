@@ -51,6 +51,7 @@ const corsOptions = {
   },
   credentials: true,
   optionsSuccessStatus: 200,
+  exposedHeaders: ['X-User-Role', 'X-Generations-Left'], // Expose custom headers to frontend
 };
 app.use(cors(corsOptions));
 

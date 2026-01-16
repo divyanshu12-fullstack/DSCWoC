@@ -20,7 +20,7 @@ function calculateTimeLeft(targetDate) {
 
 function getInitialStatus(eventStartDate, eventEndDate) {
   if (!(eventStartDate instanceof Date) || isNaN(eventStartDate.getTime()) ||
-      !(eventEndDate instanceof Date) || isNaN(eventEndDate.getTime())) {
+    !(eventEndDate instanceof Date) || isNaN(eventEndDate.getTime())) {
     return "ended";
   }
 
@@ -57,7 +57,7 @@ export function EventCountdown({ eventStartDate, eventEndDate }) {
 
   useEffect(() => {
     if (!(eventStartDate instanceof Date) || isNaN(eventStartDate.getTime()) ||
-        !(eventEndDate instanceof Date) || isNaN(eventEndDate.getTime())) {
+      !(eventEndDate instanceof Date) || isNaN(eventEndDate.getTime())) {
       return;
     }
 
@@ -139,7 +139,7 @@ export function EventCountdown({ eventStartDate, eventEndDate }) {
 
   if (status === "inProgress" && timeLeft) {
     return (
-      <div className="glass-card p-6 md:p-8 glow-border relative overflow-hidden bg-gradient-to-br from-cosmic-purple/10 via-nebula-pink/10 to-stellar-cyan/10">
+      <div className="glass-card p-6 md:p-8 glow-border relative overflow-hidden bg-gradient-to-br from-cosmic-purple/10 via-nebula-pink/10 to-stellar-cyan/10 mt-14">
         <div className="absolute inset-0 bg-gradient-to-r from-cosmic-purple/5 via-nebula-pink/5 to-stellar-cyan/5" />
         <div className="absolute top-4 right-4 opacity-20">
           <Rocket className="w-16 h-16 text-primary animate-float" />

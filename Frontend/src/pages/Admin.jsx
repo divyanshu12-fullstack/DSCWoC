@@ -85,7 +85,7 @@ const Admin = () => {
       }
       setUser(parsedUser);
       setAuthState('authorized');
-    } catch (err) {
+    } catch {
       setAuthState('not_logged_in');
       setLoading(false);
     }
@@ -224,6 +224,7 @@ const Admin = () => {
       setLoading(false);
     };
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authState]);
 
   // Load data based on active tab
@@ -233,6 +234,7 @@ const Admin = () => {
     if (activeTab === 'projects' && projects.length === 0) fetchProjects();
     if (activeTab === 'prs' && prs.length === 0) fetchPRs();
     if (activeTab === 'contacts' && contacts.length === 0) fetchContacts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, authState]);
 
   // Not logged in - show admin login
@@ -426,6 +428,7 @@ const Admin = () => {
           <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
             {[
               { id: 'overview', label: 'Overview', icon: TrendingUp },
+              { id: 'importUsers', label: 'Upload Participants', icon: FileSpreadsheet },
               { id: 'import', label: 'Import Projects', icon: Upload },
               { id: 'users', label: 'Users', icon: Users },
               { id: 'idcards', label: 'ID Cards', icon: Shield },
@@ -450,6 +453,7 @@ const Admin = () => {
 
           {/* Content */}
           {activeTab === 'overview' && overview && <OverviewSection data={overview} />}
+          {activeTab === 'importUsers' && <ImportUsersSection getAuthToken={getAuthToken} showToast={showToast} />}
           {activeTab === 'import' && <ImportSection getAuthToken={getAuthToken} onSuccess={fetchProjects} />}
           {activeTab === 'users' && <UsersSection users={users} onRefresh={fetchUsers} />}
           {activeTab === 'idcards' && <IdCardsSection getAuthToken={getAuthToken} showToast={showToast} showConfirm={(title, message, onConfirm) => setConfirmDialog({ title, message, onConfirm, onCancel: () => setConfirmDialog(null) })} />}
@@ -492,6 +496,481 @@ const Admin = () => {
                 Confirm
               </button>
             </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Import Users Section Component - Upload participants CSV
+const ImportUsersSection = ({ getAuthToken, showToast }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [csvData, setCsvData] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [result, setResult] = useState(null);
+  const [expandedErrors, setExpandedErrors] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState('upload'); // 'upload' or 'view'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('All');
+  const [usersList, setUsersList] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      readFile(file);
+    }
+  }, []);
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      readFile(file);
+    }
+  };
+
+  const readFile = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setCsvData(e.target.result);
+      setResult(null);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImport = async () => {
+    if (!csvData.trim()) return;
+
+    setImporting(true);
+    setResult(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/import/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+        body: JSON.stringify({ csvData }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setResult({ success: true, data: data.data });
+        showToast('success', `Imported ${data.data?.added || 0} users successfully`);
+      } else {
+        setResult({ success: false, error: data.message });
+        showToast('error', data.message || 'Import failed');
+      }
+    } catch (err) {
+      setResult({ success: false, error: err.message });
+      showToast('error', err.message);
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const csvTemplate = `Email,Name,Role,GitHub Username
+contributor@example.com,John Doe,Contributor,johndoe
+mentor@example.com,Jane Smith,Mentor,janesmith
+admin@example.com,Admin User,Admin,adminuser`;
+
+  // Fetch all users
+  const fetchAllUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users?limit=1000`, {
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      const data = await response.json();
+      setUsersList(data.data?.users || []);
+      showToast('success', `Loaded ${data.data?.users?.length || 0} users`);
+    } catch (err) {
+      showToast('error', err.message);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  // Filter users based on search and role
+  const filteredUsers = usersList.filter(user => {
+    const matchesSearch = !searchQuery || 
+      user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.github_username?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesRole = roleFilter === 'All' || user.role === roleFilter;
+    
+    return matchesSearch && matchesRole;
+  });
+
+  // When switching to view tab, load users
+  useEffect(() => {
+    if (activeSubTab === 'view' && usersList.length === 0) {
+      fetchAllUsers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSubTab]);
+
+  return (
+    <div className="space-y-6">
+      {/* Sub-Tabs */}
+      <div className="flex gap-2 border-b border-white/10 pb-4">
+        <button
+          onClick={() => setActiveSubTab('upload')}
+          className={`px-4 py-2 font-medium transition-all ${
+            activeSubTab === 'upload'
+              ? 'text-red-400 border-b-2 border-red-400'
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          Upload CSV
+        </button>
+        <button
+          onClick={() => setActiveSubTab('view')}
+          className={`px-4 py-2 font-medium transition-all flex items-center gap-2 ${
+            activeSubTab === 'view'
+              ? 'text-red-400 border-b-2 border-red-400'
+              : 'text-gray-400 hover:text-white'
+          }`}
+        >
+          View All Participants
+          {usersList.length > 0 && (
+            <span className="bg-red-500/20 text-red-300 text-xs px-2 py-1 rounded-full">
+              {usersList.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Upload Tab */}
+      {activeSubTab === 'upload' && (
+        <>
+      {/* Instructions */}
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
+        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <FileSpreadsheet className="w-5 h-5" />
+          Upload Participants CSV
+        </h3>
+        <div className="text-gray-300 text-sm space-y-2">
+          <p>Upload a CSV file with participant information to add multiple users to the platform.</p>
+          <p className="text-gray-400">Required columns: <code className="bg-white/10 px-2 py-1 rounded">Email</code>, <code className="bg-white/10 px-2 py-1 rounded">Name</code></p>
+          <p className="text-gray-400">Optional columns: <code className="bg-white/10 px-2 py-1 rounded">Role</code> (Contributor/Mentor/Admin), <code className="bg-white/10 px-2 py-1 rounded">GitHub Username</code></p>
+        </div>
+      </div>
+
+      {/* Drag & Drop Zone */}
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+          isDragging
+            ? 'border-red-500 bg-red-500/10'
+            : 'border-white/20 bg-white/5 hover:border-white/40'
+        }`}
+      >
+        <Upload className={`w-12 h-12 mx-auto mb-4 ${isDragging ? 'text-red-400' : 'text-gray-400'}`} />
+        <p className="text-white font-medium mb-2">
+          {isDragging ? 'Drop file here' : 'Drag & drop CSV file here'}
+        </p>
+        <p className="text-gray-400 text-sm mb-4">or</p>
+        <label className="inline-block">
+          <input
+            type="file"
+            accept=".csv,.txt"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <span className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg cursor-pointer transition-colors">
+            Browse Files
+          </span>
+        </label>
+      </div>
+
+      {/* CSV Data Preview/Edit */}
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-semibold">CSV Data</h3>
+          <button
+            onClick={() => setCsvData(csvTemplate)}
+            className="text-sm text-red-400 hover:text-red-300"
+          >
+            Load Template
+          </button>
+        </div>
+        <textarea
+          value={csvData}
+          onChange={(e) => setCsvData(e.target.value)}
+          placeholder="Paste CSV data here or drag & drop a file above..."
+          className="w-full h-48 bg-black/30 border border-white/10 rounded-lg p-4 text-white text-sm font-mono resize-none focus:outline-none focus:border-red-500"
+        />
+
+        {/* Import Button */}
+        <button
+          onClick={handleImport}
+          disabled={!csvData.trim() || importing}
+          className="mt-4 w-full py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {importing ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              Importing...
+            </>
+          ) : (
+            <>
+              <Upload className="w-4 h-4" />
+              Import Participants
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Results */}
+      {result && (
+        <div className={`rounded-xl p-6 ${result.success ? 'bg-green-500/10 border border-green-500/30' : 'bg-red-500/10 border border-red-500/30'}`}>
+          <div className="flex items-start gap-3">
+            {result.success ? (
+              <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" />
+            ) : (
+              <XCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+            )}
+            <div className="flex-1">
+              <h4 className={`font-semibold ${result.success ? 'text-green-300' : 'text-red-300'}`}>
+                {result.success ? 'Import Completed!' : 'Import Failed'}
+              </h4>
+              {result.success && result.data && (
+                <div className="mt-4 space-y-4">
+                  {/* Summary Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-black/30 rounded-lg p-3 border border-green-500/30">
+                      <p className="text-gray-400 text-xs">Added</p>
+                      <p className="text-green-400 text-2xl font-bold">{result.data.added || 0}</p>
+                    </div>
+                    <div className="bg-black/30 rounded-lg p-3 border border-yellow-500/30">
+                      <p className="text-gray-400 text-xs">Skipped</p>
+                      <p className="text-yellow-400 text-2xl font-bold">{result.data.skipped || 0}</p>
+                    </div>
+                    <div className="bg-black/30 rounded-lg p-3 border border-blue-500/30">
+                      <p className="text-gray-400 text-xs">Duplicates</p>
+                      <p className="text-blue-400 text-2xl font-bold">{result.data.duplicates || 0}</p>
+                    </div>
+                    <div className="bg-black/30 rounded-lg p-3 border border-gray-500/30">
+                      <p className="text-gray-400 text-xs">Total Rows</p>
+                      <p className="text-gray-300 text-2xl font-bold">{result.data.total || 0}</p>
+                    </div>
+                  </div>
+
+                  {/* Role Breakdown */}
+                  {result.data.roleBreakdown && (
+                    <div className="bg-black/30 rounded-lg p-4 border border-white/10">
+                      <p className="text-gray-300 text-sm font-semibold mb-3">Users by Role:</p>
+                      <div className="space-y-2">
+                        {Object.entries(result.data.roleBreakdown).map(([role, count]) => (
+                          <div key={role} className="flex items-center justify-between">
+                            <span className="text-gray-400 text-sm">{role}</span>
+                            <span className={`font-semibold ${
+                              role === 'Admin' ? 'text-red-300' :
+                              role === 'Mentor' ? 'text-blue-300' :
+                              'text-green-300'
+                            }`}>{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Error Logs */}
+                  {result.data.errors && result.data.errors.length > 0 && (
+                    <div className="bg-black/30 rounded-lg p-4 border border-red-500/30">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-red-300 text-sm font-semibold flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" />
+                          Issues Found ({result.data.errors.length})
+                        </p>
+                        <button
+                          onClick={() => setExpandedErrors(!expandedErrors)}
+                          className="text-xs text-red-400 hover:text-red-300"
+                        >
+                          {expandedErrors ? 'Hide' : 'Show'} Details
+                        </button>
+                      </div>
+                      
+                      {expandedErrors && (
+                        <div className="mt-3 space-y-2 max-h-96 overflow-y-auto">
+                          {result.data.errors.map((err, idx) => (
+                            <div key={idx} className="bg-black/50 rounded p-3 border border-red-500/20">
+                              <div className="flex items-start gap-2">
+                                <span className="text-red-400 text-xs font-mono flex-shrink-0">Row {err.row}:</span>
+                                <div className="flex-1">
+                                  <p className="text-red-300 text-xs font-medium">{err.email || err.name || 'Unknown'}</p>
+                                  <p className="text-gray-400 text-xs mt-1">{err.reason || err.error}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              {!result.success && (
+                <p className="mt-2 text-sm text-red-300">{result.error}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+        </>
+      )}
+
+      {/* View Tab */}
+      {activeSubTab === 'view' && (
+        <div className="space-y-6">
+          {/* Search and Filter */}
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6 space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <label className="block text-gray-300 text-sm mb-2">Search by Name, Email, or GitHub</label>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search participants..."
+                  className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-red-500"
+                />
+              </div>
+              <div className="w-full md:w-40">
+                <label className="block text-gray-300 text-sm mb-2">Filter by Role</label>
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-red-500"
+                >
+                  <option value="All">All Roles</option>
+                  <option value="Contributor">Contributor</option>
+                  <option value="Mentor">Mentor</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={fetchAllUsers}
+                  disabled={usersLoading}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${usersLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </button>
+              </div>
+            </div>
+
+            {/* Search Stats */}
+            <div className="flex items-center justify-between text-sm">
+              <p className="text-gray-400">
+                Showing <span className="text-white font-semibold">{filteredUsers.length}</span> of <span className="text-white font-semibold">{usersList.length}</span> participants
+              </p>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="text-red-400 hover:text-red-300 text-xs"
+                >
+                  Clear Search
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Users Table */}
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden">
+            {filteredUsers.length === 0 ? (
+              <div className="p-12 text-center">
+                <Users className="w-12 h-12 text-gray-500 mx-auto mb-4 opacity-50" />
+                <p className="text-gray-400">
+                  {usersList.length === 0 ? 'No participants yet. Upload a CSV to get started!' : 'No participants match your search criteria.'}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-white/5">
+                      <th className="px-6 py-4 text-left text-gray-400 text-sm font-semibold">Participant</th>
+                      <th className="px-6 py-4 text-left text-gray-400 text-sm font-semibold">Email</th>
+                      <th className="px-6 py-4 text-left text-gray-400 text-sm font-semibold">GitHub</th>
+                      <th className="px-6 py-4 text-left text-gray-400 text-sm font-semibold">Role</th>
+                      <th className="px-6 py-4 text-left text-gray-400 text-sm font-semibold">Points</th>
+                      <th className="px-6 py-4 text-left text-gray-400 text-sm font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {filteredUsers.map((user) => (
+                      <tr key={user._id} className="hover:bg-white/5 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={user.avatar_url}
+                              alt={user.fullName}
+                              className="w-8 h-8 rounded-full border border-white/10"
+                            />
+                            <span className="text-white font-medium text-sm">{user.fullName}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-gray-300 text-sm">{user.email}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <a
+                            href={`https://github.com/${user.github_username}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-red-400 hover:text-red-300 text-sm transition-colors"
+                          >
+                            @{user.github_username}
+                          </a>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            user.role === 'Admin' ? 'bg-red-500/20 text-red-300' :
+                            user.role === 'Mentor' ? 'bg-blue-500/20 text-blue-300' :
+                            'bg-green-500/20 text-green-300'
+                          }`}>
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-white font-semibold text-sm">{user.totalPoints || user.stats?.points || 0}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-3 py-1 rounded text-xs font-semibold ${
+                            user.isActive ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'
+                          }`}>
+                            {user.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -1,17 +1,44 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Ticket } from 'lucide-react';
+
+const readStoredUser = () => {
+  try {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const getDashboardPathForUser = (user) => {
+  if (!user) return '/login';
+  if (user.role === 'Admin') return '/admin';
+  if (user.role === 'Mentor') return '/mentor/dashboard';
+  return '/dashboard';
+};
 
 const HeroSection = () => {
   const spaceshipRef = useRef(null);
   const navigate = useNavigate();
+  const [user, setUser] = useState(() => readStoredUser());
+
+  useEffect(() => {
+    const syncUser = () => setUser(readStoredUser());
+    window.addEventListener('storage', syncUser);
+    window.addEventListener('auth:changed', syncUser);
+    return () => {
+      window.removeEventListener('storage', syncUser);
+      window.removeEventListener('auth:changed', syncUser);
+    };
+  }, []);
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 pt-20 sm:pt-24">
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         {/* Left: Text Content */}
         <div className="space-y-4 sm:space-y-6 animate-fade-in text-center md:text-left">
-          
+
 
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
             DSC WINTER OF CODE
@@ -25,20 +52,33 @@ const HeroSection = () => {
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6">
-            <button
-              onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog', '_blank')}
-              className="retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-galaxy-violet hover:to-nebula-pink text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/50 hover:-translate-y-1 flex items-center justify-center gap-2 cosmic-glow">
-              JOIN THE MISSION
-            </button>
-            <button
-              onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog', '_blank')}
-              className="retro-button border-2 border-cosmic-purple text-cosmic-purple hover:bg-cosmic-purple/20 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cosmic-purple/30">
-              BECOME A MENTOR
-            </button>
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 pt-4 sm:pt-6">
+            {user ? (
+              <button
+                onClick={() => navigate(getDashboardPathForUser(user))}
+                className="retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-galaxy-violet hover:to-nebula-pink text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-bold transition-all duration-300 shadow-xl shadow-cosmic-purple/40 ring-1 ring-white/15 hover:shadow-2xl hover:shadow-cosmic-purple/60 hover:-translate-y-1 flex hover:font-extrabold items-center justify-center gap-2 cosmic-glow w-full max-w-[320px] sm:w-auto sm:max-w-none"
+              >
+                DASHBOARD
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog', '_blank')}
+                  className="retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-galaxy-violet hover:to-nebula-pink text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/50 hover:-translate-y-1 flex items-center justify-center gap-2 cosmic-glow w-full max-w-[320px] sm:w-auto sm:max-w-none"
+                >
+                  JOIN THE MISSION
+                </button>
+                <button
+                  onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog', '_blank')}
+                  className="retro-button border-2 border-cosmic-purple text-cosmic-purple hover:bg-cosmic-purple/20 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cosmic-purple/30 w-full max-w-[320px] sm:w-auto sm:max-w-none"
+                >
+                  BECOME A MENTOR
+                </button>
+              </>
+            )}
             <button
               onClick={() => navigate('/generate-id')}
-              className="retro-button border-2 border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cyan-500/30">
+              className="retro-button border-2 border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cyan-500/30 w-full max-w-[320px] sm:w-auto sm:max-w-none">
               <Ticket className="w-4 h-4" />
               GET ID CARD
             </button>

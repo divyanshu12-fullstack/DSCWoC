@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signOut } from '../lib/supabase';
 
 const readStoredUser = () => {
   try {
@@ -18,6 +19,18 @@ const Navbar = () => {
   const [user, setUser] = useState(() => readStoredUser());
   const navigate = useNavigate();
 
+  const getDashboardPathForUser = (user) => {
+    if (!user) return '/login';
+    switch (user.role) {
+      case 'Admin':
+        return '/admin';
+      case 'Mentor':
+        return '/mentor/dashboard';
+      default:
+        return '/dashboard';
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
@@ -30,17 +43,27 @@ const Navbar = () => {
 
     const handleStorage = (event) => {
       if (event.key === 'user') {
-        setUser(event.newValue ? JSON.parse(event.newValue) : null);
+        try {
+          setUser(event.newValue ? JSON.parse(event.newValue) : null);
+        } catch {
+          setUser(null);
+        }
       }
+    };
+
+    const handleAuthChanged = () => {
+      setUser(readStoredUser());
     };
 
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('storage', handleStorage);
+    window.addEventListener('auth:changed', handleAuthChanged);
     handleScroll();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('auth:changed', handleAuthChanged);
     };
   }, []);
 
@@ -94,29 +117,31 @@ const Navbar = () => {
     };
   }, [mobileMenuOpen]);
 
-  const handleJoinMission = () => {
-    if (user) {
-      // Redirect based on role
-      switch (user.role) {
-        case 'Admin':
-          navigate('/admin');
-          break;
-        case 'Mentor':
-          navigate('/mentor/dashboard');
-          break;
-        default:
-          navigate('/dashboard');
-      }
-    } else {
-      navigate('/login');
+  const handleDashboardClick = () => {
+    navigate(getDashboardPathForUser(user));
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('user');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('intended_role');
+      setUser(null);
+      setMobileMenuOpen(false);
+      window.dispatchEvent(new Event('auth:changed'));
+      navigate('/');
     }
   };
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-lg bg-black/40 md:bg-transparent md:backdrop-blur-none ${scrolled
-          ? 'glass-effect shadow-lg shadow-cosmic-purple/10 md:backdrop-blur-lg'
-          : ''
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+        ? 'glass-effect shadow-lg shadow-cosmic-purple/10'
+        : 'bg-transparent'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between">
@@ -172,21 +197,20 @@ const Navbar = () => {
 
         {/* Desktop User Section */}
         <div className="hidden md:flex items-center space-x-4">
-          {user && (
-            <div className="flex items-center space-x-3">
-              <img
-                src={user.avatar_url}
-                alt={user.fullName}
-                className="w-8 h-8 rounded-full border-2 border-stellar-cyan"
-              />
-              <span className="text-white text-sm">{user.fullName}</span>
-              <button
-                onClick={handleJoinMission}
-                className="retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-galaxy-violet hover:to-nebula-pink text-white px-4 py-2 rounded-full font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/50 hover:-translate-y-0.5"
-              >
-                DASHBOARD
-              </button>
-            </div>
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="retro-button border-2 border-nebula-pink text-white hover:bg-nebula-pink/15 px-5 py-2 rounded-full font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-nebula-pink/40 hover:-translate-y-0.5 cosmic-glow"
+            >
+              LOGOUT
+            </button>
+          ) : (
+            <button
+              onClick={handleDashboardClick}
+              className="retro-button border-2 border-cosmic-purple text-white hover:bg-cosmic-purple/15 px-6 py-2 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-cosmic-purple/20 hover:shadow-xl hover:shadow-cosmic-purple/45 hover:-translate-y-0.5 cosmic-glow"
+            >
+              DASHBOARD
+            </button>
           )}
         </div>
       </div>
@@ -195,37 +219,42 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <>
           {/* Overlay to prevent body scroll */}
-          <div className="fixed inset-0 bg-black/50 md:hidden" style={{ top: '64px', zIndex: 40 }} />
+          <div
+            className="fixed inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/95 md:hidden"
+            style={{ top: '64px', zIndex: 40 }}
+          />
 
-          <div className="md:hidden glass-effect border-t border-cosmic-purple/20 absolute top-full left-0 right-0 w-screen" style={{ zIndex: 45 }}>
-            <div className="px-4 py-4 space-y-3">
+          <div
+            className="md:hidden glass-effect glass-panel mobile-menu-panel absolute top-full left-0 right-0 w-screen"
+            style={{ zIndex: 45 }}
+          >
+            <div className="px-4 pb-4 pt-2 space-y-3">
               {navItems.map((item) => (
                 <button
                   key={item.name}
                   onClick={() => handleNavClick(item)}
-                  className="block w-full text-left text-gray-300 hover:text-cosmic-purple transition-colors duration-200 py-2 px-3 rounded-lg hover:bg-cosmic-purple/10"
+                  className="block w-full text-left menu-item hover:text-cosmic-purple transition-colors duration-200 py-3 px-3 rounded-lg hover:bg-white/10"
                 >
                   {item.name}
                 </button>
               ))}
 
-              {user && (
+              {user ? (
                 <div className="pt-3 border-t border-white/10">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <img
-                      src={user.avatar_url}
-                      alt={user.fullName}
-                      className="w-8 h-8 rounded-full border-2 border-stellar-cyan"
-                    />
-                    <span className="text-white text-sm">{user.fullName}</span>
-                  </div>
                   <button
-                    onClick={handleJoinMission}
-                    className="w-full retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink text-white px-6 py-2.5 rounded-full font-semibold"
+                    onClick={handleLogout}
+                    className="w-full retro-button border-2 border-nebula-pink text-white hover:bg-nebula-pink/15 px-6 py-2.5 rounded-full font-semibold cosmic-glow"
                   >
-                    DASHBOARD
+                    LOGOUT
                   </button>
                 </div>
+              ) : (
+                <button
+                  onClick={handleDashboardClick}
+                  className="w-full retro-button border-2 border-cosmic-purple text-white hover:bg-cosmic-purple/15 px-6 py-2.5 rounded-full font-semibold mt-3 cosmic-glow"
+                >
+                  DASHBOARD
+                </button>
               )}
             </div>
           </div>
