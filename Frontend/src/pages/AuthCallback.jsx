@@ -27,6 +27,13 @@ const AuthCallback = () => {
         const getApiUrl = () => {
           const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL
           
+          console.log('Environment check:', {
+            VITE_API_URL: import.meta.env.VITE_API_URL,
+            VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+            hostname: window.location.hostname,
+            envUrl: envUrl
+          })
+          
           if (envUrl) {
             return String(envUrl).replace(/\/+$/, '').replace(/\/api(?:\/v1)?$/, '')
           }
@@ -39,7 +46,7 @@ const AuthCallback = () => {
           return 'http://localhost:5000'
         }
         const apiUrl = getApiUrl()
-        console.log('Calling backend API:', apiUrl)
+        console.log('Final API URL:', apiUrl)
         
         // Get the intended role from localStorage (set during login)
         const intendedRole = localStorage.getItem('intended_role') || 'contributor'
