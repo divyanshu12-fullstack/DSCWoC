@@ -19,7 +19,6 @@ async function addTestUsers() {
       githubUrl: 'https://github.com/testcontributor',
       avatar_url: 'https://avatars.githubusercontent.com/u/1?v=4',
       role: 'Contributor',
-      yearOfStudy: 2,
       linkedinUrl: 'https://linkedin.com/in/testcontributor',
       college: 'Test College',
       isActive: true,

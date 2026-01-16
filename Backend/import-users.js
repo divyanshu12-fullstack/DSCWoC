@@ -72,7 +72,6 @@ function extractUserData(row, headers, role) {
     github_username: '',
     linkedinUrl: '',
     role: role,
-    yearOfStudy: 0,
     isActive: true,
     stats: {
       totalPRs: 0,
@@ -88,7 +87,6 @@ function extractUserData(row, headers, role) {
     userData.email = getColumn('4. Email Address') || getColumn('Email Address');
     userData.fullName = getColumn('1. Full Name');
     userData.github_username = getColumn('1. GitHub Username')?.replace('https://github.com/', '').replace('github.com/', '');
-    userData.yearOfStudy = parseInt(getColumn('5. Year of Study')) || 0;
 
     const githubCol = getColumn('1. GitHub Username');
     if (githubCol) {

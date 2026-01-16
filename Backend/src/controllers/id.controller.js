@@ -91,10 +91,6 @@ export const generateIdCard = async (req, res, next) => {
       : `https://linkedin.com/in/${linkedinId}`;
     user.linkedinUrl = linkedinUrl;
 
-    // Increment generation count
-    user.idGeneratedCount = (user.idGeneratedCount || 0) + 1;
-    await user.save();
-
     // Generate QR with auth key
     const qrBuffer = await generateQr(user.authKey);
 
@@ -114,6 +110,10 @@ export const generateIdCard = async (req, res, next) => {
         email: user.email,
       },
     });
+
+    // ✅ ONLY INCREMENT COUNTER AFTER SUCCESSFUL GENERATION
+    user.idGeneratedCount = (user.idGeneratedCount || 0) + 1;
+    await user.save();
 
     // Send response with headers
     res.setHeader('Content-Type', 'image/png');

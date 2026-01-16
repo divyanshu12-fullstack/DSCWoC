@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Starfield from '../components/Starfield'
 import { useProjects, useProjectFilters, useMyProjects, useCreateProject } from '../hooks/useApi'
+import { Clock } from 'lucide-react'
 
 // Difficulty badge colors
 const difficultyColors = {
@@ -388,6 +389,8 @@ const Projects = () => {
   const navigate = useNavigate()
   const [selectedProject, setSelectedProject] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [timeLeft, setTimeLeft] = useState({})
+  const [isLocked, setIsLocked] = useState(false)
   const [filters, setFilters] = useState({
     page: 1,
     limit: 12,
@@ -403,6 +406,37 @@ const Projects = () => {
     if (storedUser) {
       setUser(JSON.parse(storedUser))
     }
+  }, [])
+
+  // Lockdown timer - 16th Jan 10 PM
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const lockdownTime = new Date(2026, 0, 16, 22, 0, 0).getTime() // Jan 16, 10 PM
+      const now = new Date().getTime()
+      const difference = lockdownTime - now
+
+      if (difference > 0) {
+        setIsLocked(true) // Projects are locked UNTIL deadline
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        })
+      } else {
+        setIsLocked(false) // Projects are visible AFTER deadline
+        setTimeLeft({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+        })
+      }
+    }
+
+    calculateTimeLeft()
+    const timer = setInterval(calculateTimeLeft, 1000)
+    return () => clearInterval(timer)
   }, [])
 
   const isMentorOrAdmin = user?.role === 'Mentor' || user?.role === 'Admin'
@@ -429,14 +463,52 @@ const Projects = () => {
         <Navbar />
 
         <main className="pt-20 sm:pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          {/* Header */}
-          <header className="text-center mb-12">
-            <p className="text-sm uppercase tracking-[0.35em] text-cyan-200/80 mb-2">Projects Dock</p>
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">🚀 Open Source Projects</h1>
-            <p className="text-gray-300 max-w-2xl mx-auto">
-              Explore projects, find issues to work on, and start contributing to open source.
-            </p>
-          </header>
+          {/* Projects Hidden Until Deadline */}
+          {isLocked ? (
+            <div className="min-h-[70vh] flex items-center justify-center">
+              <div className="w-full max-w-2xl">
+                <div className="text-center mb-12">
+                  <Clock className="w-20 h-20 text-amber-400 mx-auto mb-6 animate-pulse" />
+                  <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">Projects Coming Soon</h1>
+                  <p className="text-gray-300 text-lg mb-8">
+                    Projects will be revealed on January 15th at 10:00 PM. Stay tuned!
+                  </p>
+                </div>
+
+                {/* Countdown Timer */}
+                <div className="p-8 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-2xl">
+                  <h3 className="text-2xl font-bold text-amber-300 mb-8 text-center">Time Until Reveal</h3>
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="bg-black/40 rounded-lg p-6 text-center backdrop-blur-sm">
+                      <div className="text-4xl font-bold text-amber-300">{String(timeLeft.days || 0).padStart(2, '0')}</div>
+                      <div className="text-sm text-gray-400 mt-2">Days</div>
+                    </div>
+                    <div className="bg-black/40 rounded-lg p-6 text-center backdrop-blur-sm">
+                      <div className="text-4xl font-bold text-amber-300">{String(timeLeft.hours || 0).padStart(2, '0')}</div>
+                      <div className="text-sm text-gray-400 mt-2">Hours</div>
+                    </div>
+                    <div className="bg-black/40 rounded-lg p-6 text-center backdrop-blur-sm">
+                      <div className="text-4xl font-bold text-amber-300">{String(timeLeft.minutes || 0).padStart(2, '0')}</div>
+                      <div className="text-sm text-gray-400 mt-2">Minutes</div>
+                    </div>
+                    <div className="bg-black/40 rounded-lg p-6 text-center backdrop-blur-sm">
+                      <div className="text-4xl font-bold text-amber-300">{String(timeLeft.seconds || 0).padStart(2, '0')}</div>
+                      <div className="text-sm text-gray-400 mt-2">Seconds</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full">
+              {/* Header */}
+              <header className="text-center mb-12">
+                <p className="text-sm uppercase tracking-[0.35em] text-cyan-200/80 mb-2">Projects Dock</p>
+                <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">🚀 Open Source Projects</h1>
+                <p className="text-gray-300 max-w-2xl mx-auto">
+                  Explore projects, find issues to work on, and start contributing to open source.
+                </p>
+              </header>
 
           {/* My Projects Section (for Mentors/Admins) */}
           {isMentorOrAdmin && (
@@ -567,6 +639,8 @@ const Projects = () => {
                 </div>
               )}
             </>
+          )}
+            </div>
           )}
         </main>
       </div>

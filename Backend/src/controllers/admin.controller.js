@@ -6,6 +6,7 @@ import Contact from '../models/Contact.model.js';
 import { HTTP_STATUS } from '../config/constants.js';
 import { successResponse, errorResponse } from '../utils/response.js';
 import logger from '../utils/logger.js';
+import { generateIdCard } from './id.controller.js';
 
 /**
  * Get Admin Dashboard Overview Statistics
@@ -314,6 +315,119 @@ export const getUserPRHistory = async (req, res) => {
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(
       errorResponse('Failed to fetch PR history')
     );
+  }
+};
+
+/**
+ * Lookup a single user by email or GitHub username and include ID card status
+ * @route GET /api/admin/users/lookup?email=...&github=...
+ */
+export const lookupUser = async (req, res) => {
+  try {
+    const { email, github } = req.query;
+    if (!email && !github) {
+      return errorResponse(res, 'Provide email or github username', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const filter = email
+      ? { email: String(email).toLowerCase() }
+      : { github_username: String(github) };
+
+    const user = await User.findOne(filter).lean();
+    if (!user) {
+      return errorResponse(res, 'User not found', HTTP_STATUS.NOT_FOUND);
+    }
+
+    const result = {
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      github_username: user.github_username,
+      github_id: user.github_id,
+      avatar_url: user.avatar_url,
+      role: user.role,
+      linkedinUrl: user.linkedinUrl || '',
+      idGeneratedCount: user.idGeneratedCount || 0,
+      authKey: user.authKey || null,
+      isActive: user.isActive,
+      stats: {
+        points: user.stats?.points || 0,
+        totalPRs: user.stats?.totalPRs || 0,
+      },
+    };
+
+    return successResponse(res, { user: result }, 'User lookup successful');
+  } catch (error) {
+    logger.error('Error in lookupUser:', error);
+    return errorResponse(res, 'Failed to lookup user', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+  }
+};
+
+/**
+ * Grant grace retry: decrement or reset idGeneratedCount
+ * @route POST /api/admin/id/grace
+ */
+export const grantIdGrace = async (req, res) => {
+  try {
+    const { email, action = 'decrement', reason } = req.body || {};
+    if (!email) {
+      return errorResponse(res, 'Email is required', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const user = await User.findOne({ email: String(email).toLowerCase() });
+    if (!user) {
+      return errorResponse(res, 'User not found', HTTP_STATUS.NOT_FOUND);
+    }
+
+    const before = user.idGeneratedCount || 0;
+    if (action === 'reset') {
+      user.idGeneratedCount = 0;
+    } else {
+      user.idGeneratedCount = Math.max(0, before - 1);
+    }
+    await user.save();
+
+    logger.warn(
+      `Admin ${req.user?.github_username} granted ID grace for ${user.email}. Action: ${action}. Reason: ${reason || 'N/A'}. Count ${before} -> ${user.idGeneratedCount}`
+    );
+
+    return successResponse(
+      res,
+      {
+        email: user.email,
+        fullName: user.fullName,
+        idGeneratedCountBefore: before,
+        idGeneratedCountAfter: user.idGeneratedCount,
+      },
+      'Grace applied successfully'
+    );
+  } catch (error) {
+    logger.error('Error in grantIdGrace:', error);
+    return errorResponse(res, 'Failed to grant grace', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+  }
+};
+
+/**
+ * Admin-triggered ID card generation wrapper
+ * Accepts multipart form with fields: email, linkedinId, name (optional), githubId (optional), photo
+ * It forwards to the existing generateIdCard controller while ensuring githubId presence.
+ * @route POST /api/admin/id/generate
+ */
+export const adminGenerateIdCard = async (req, res, next) => {
+  try {
+    // Ensure githubId is present to satisfy validation in generateIdCard
+    const { email } = req.body || {};
+    if (email) {
+      const user = await User.findOne({ email: String(email).toLowerCase() });
+      if (user && !req.body.githubId) {
+        req.body.githubId = user.github_id || 'ADMIN_OVERRIDE';
+        if (!req.body.name) req.body.name = user.fullName;
+      }
+    }
+    return generateIdCard(req, res, next);
+  } catch (error) {
+    logger.error('Error in adminGenerateIdCard:', error);
+    return errorResponse(res, 'Failed to generate ID card', HTTP_STATUS.INTERNAL_SERVER_ERROR);
   }
 };
 

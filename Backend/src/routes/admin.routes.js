@@ -3,6 +3,7 @@ import { authenticate, requireAdmin } from '../middleware/auth.js';
 import {
   getOverview,
   getAllUsers,
+  lookupUser,
   updateUserRole,
   updateUserStatus,
   adjustUserPoints,
@@ -22,8 +23,11 @@ import {
   assignBadge,
   exportUsers,
   exportPRs,
-  exportLeaderboard
+  exportLeaderboard,
+  grantIdGrace,
+  adminGenerateIdCard
 } from '../controllers/admin.controller.js';
+import upload from '../middleware/upload.js';
 import {
   getAllContacts,
   updateContactStatus,
@@ -32,7 +36,8 @@ import {
 } from '../controllers/contact.controller.js';
 import {
   importProjects,
-  getImportTemplate
+  getImportTemplate,
+  importUsers
 } from '../controllers/import.controller.js';
 
 const router = express.Router();
@@ -45,14 +50,20 @@ router.get('/overview', getOverview);
 
 // ==================== IMPORT FROM SHEET ====================
 router.post('/import/projects', importProjects);
+router.post('/import/users', importUsers);
 router.get('/import/template', getImportTemplate);
 
 // ==================== USER MANAGEMENT ====================
 router.get('/users', getAllUsers);
+router.get('/users/lookup', lookupUser);
 router.patch('/users/:id/role', updateUserRole);
 router.patch('/users/:id/status', updateUserStatus);
 router.patch('/users/:id/points', adjustUserPoints);
 router.get('/users/:id/prs', getUserPRHistory);
+
+// ==================== ID CARDS (Admin Ops) ====================
+router.post('/id/grace', grantIdGrace);
+router.post('/id/generate', upload.single('photo'), adminGenerateIdCard);
 
 // ==================== PROJECT MANAGEMENT ====================
 router.get('/projects', getAllProjects);

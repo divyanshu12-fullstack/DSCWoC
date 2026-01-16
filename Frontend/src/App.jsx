@@ -146,6 +146,7 @@ const Home = () => {
             <div ref={ctaRef} className="min-h-[420px]">
               {ctaVisible ? <CTASection /> : <SectionSkeleton className="h-[420px]" />}
             </div>
+
             <Footer />
           </div>
         </div>

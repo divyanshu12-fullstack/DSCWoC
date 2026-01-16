@@ -194,3 +194,145 @@ Example Project,https://github.com/owner/repo,Project description,Beginner,mento
 
   successResponse(res, { template }, 'CSV template generated');
 };
+
+/**
+ * @desc    Import users/participants from CSV
+ * @route   POST /api/v1/admin/import/users
+ * @access  Private (Admin only)
+ */
+export const importUsers = async (req, res) => {
+  try {
+    const { csvData } = req.body;
+
+    if (!csvData) {
+      return errorResponse(res, 'CSV data is required', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    // Parse CSV
+    let rows;
+    try {
+      rows = parseCSV(csvData);
+    } catch (err) {
+      return errorResponse(res, `Failed to parse CSV: ${err.message}`, HTTP_STATUS.BAD_REQUEST);
+    }
+
+    if (rows.length === 0) {
+      return errorResponse(res, 'No valid data rows found in CSV', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const results = {
+      total: rows.length,
+      added: 0,
+      skipped: 0,
+      duplicates: 0,
+      errors: [],
+      roleBreakdown: {
+        Contributor: 0,
+        Mentor: 0,
+        Admin: 0,
+      },
+    };
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowNum = i + 2; // +2 because row 1 is header, and we're 0-indexed
+
+      try {
+        // Map CSV columns (handle various naming conventions)
+        const email = row.email || row.email_address || row['4. email address'] || '';
+        const name = row.name || row.full_name || row.fullname || row['1. full name'] || '';
+        const githubUsername = row.github_username || row.github || row['1. github username'] || '';
+        const role = (row.role || row.position || 'Contributor').trim();
+
+        // Validate required fields
+        if (!email || !email.includes('@')) {
+          results.skipped++;
+          results.errors.push({
+            row: rowNum,
+            email: email || 'N/A',
+            name: name || 'N/A',
+            reason: 'Invalid or missing email address',
+          });
+          continue;
+        }
+
+        if (!name || name.trim() === '') {
+          results.skipped++;
+          results.errors.push({
+            row: rowNum,
+            email,
+            name: 'N/A',
+            reason: 'Missing name',
+          });
+          continue;
+        }
+
+        // Validate role
+        const validRoles = ['Contributor', 'Mentor', 'Admin'];
+        const normalizedRole = validRoles.includes(role) ? role : 'Contributor';
+
+        // Check if user already exists
+        const existing = await User.findOne({
+          $or: [
+            { email: email.toLowerCase() },
+            { github_username: githubUsername.toLowerCase() }
+          ]
+        });
+
+        if (existing) {
+          results.duplicates++;
+          results.errors.push({
+            row: rowNum,
+            email,
+            name,
+            reason: `User already exists (${existing.email})`,
+          });
+          continue;
+        }
+
+        // Create new user
+        const newUser = new User({
+          email: email.toLowerCase(),
+          fullName: name.trim(),
+          name: name.trim(),
+          github_username: githubUsername || email.split('@')[0],
+          github_id: `${email}-${Date.now()}`,
+          role: normalizedRole,
+          avatar_url: `https://avatars.githubusercontent.com/u/${Math.random().toString().slice(2, 10)}?v=4`,
+          isActive: true,
+          stats: {
+            totalPRs: 0,
+            mergedPRs: 0,
+            prPoints: 0,
+            bonusPoints: 0,
+            points: 0,
+            rank: 0,
+          },
+        });
+
+        await newUser.save();
+        results.added++;
+        results.roleBreakdown[normalizedRole]++;
+
+      } catch (err) {
+        results.skipped++;
+        results.errors.push({
+          row: rowNum,
+          email: row.email || 'N/A',
+          name: row.name || 'N/A',
+          reason: err.message,
+        });
+      }
+    }
+
+    logger.info(
+      `Users import by ${req.user.github_username}: ${results.added} added, ${results.duplicates} duplicates, ${results.skipped} skipped`
+    );
+
+    successResponse(res, results, `Import completed: ${results.added} users added`);
+
+  } catch (error) {
+    logger.error('Error importing users:', error);
+    errorResponse(res, 'Failed to import users', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+  }
+};

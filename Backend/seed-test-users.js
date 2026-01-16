@@ -17,7 +17,6 @@ async function addTestUsers() {
       github_id: 'test-contributor-001',
       github_username: 'testcontributor',
       role: 'Contributor',
-      yearOfStudy: 2,
       avatar_url: 'https://avatars.githubusercontent.com/u/1?v=4',
       isActive: true,
       stats: {
