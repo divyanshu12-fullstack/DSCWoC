@@ -239,7 +239,7 @@ const Navbar = () => {
                 </button>
               ))}
 
-              {user && (
+              {user ? (
                 <div className="pt-3 border-t border-white/10">
                   <button
                     onClick={handleLogout}
