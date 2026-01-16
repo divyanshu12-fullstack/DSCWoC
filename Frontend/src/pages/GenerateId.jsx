@@ -3,11 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import Starfield from '../components/Starfield';
 import { Loader2, Download, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 
-// Use localhost for development, Railway for production
-const API_BASE = import.meta.env.VITE_API_URL ||
-  (window.location.hostname === 'localhost'
-    ? 'http://localhost:5000/api/v1'
-    : 'https://dscwoc-production.up.railway.app/api/v1');
+// Use Railway production backend or localhost for development
+const API_BASE = (() => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+  
+  if (envUrl) {
+    // Use the environment variable if set
+    return envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/v1`;
+  }
+  
+  // For production deployed on Railway
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'https://dscwoc-production.up.railway.app/api/v1';
+  }
+  
+  // Default to localhost for development
+  return 'http://localhost:5000/api/v1';
+})();
 
 // Utility functions for input sanitization and URL extraction
 const sanitizeInput = (input) => {

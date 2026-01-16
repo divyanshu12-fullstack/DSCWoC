@@ -26,7 +26,21 @@ const Contact = () => {
     setError('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+      const getApiBaseUrl = () => {
+        const envUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL
+        
+        if (envUrl) {
+          return envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/v1`
+        }
+        
+        // For production deployed on Railway
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+          return 'https://dscwoc-production.up.railway.app/api/v1'
+        }
+        
+        return 'http://localhost:5000/api/v1'
+      }
+      const apiBaseUrl = getApiBaseUrl()
       const response = await fetch(`${apiBaseUrl}/contact/submit`, {
         method: 'POST',
         headers: {

@@ -20,7 +20,13 @@ import {
 } from 'lucide-react';
 
 const normalizeApiBaseUrl = (raw) => {
-  if (!raw) return 'http://localhost:5000/api/v1';
+  if (!raw) {
+    // For production deployed on Railway
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return 'https://dscwoc-production.up.railway.app/api/v1';
+    }
+    return 'http://localhost:5000/api/v1';
+  }
   const base = String(raw).replace(/\/+$/, '');
   if (base.endsWith('/api/v1')) return base;
   if (base.endsWith('/api')) return `${base}/v1`;

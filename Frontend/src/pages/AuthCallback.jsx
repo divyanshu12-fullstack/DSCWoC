@@ -24,10 +24,21 @@ const AuthCallback = () => {
         }
 
         // Send the session to our backend to create/update user
-        const rawApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL
-        const apiUrl = rawApiUrl
-          ? String(rawApiUrl).replace(/\/+$/, '').replace(/\/api(?:\/v1)?$/, '')
-          : 'http://localhost:5000'
+        const getApiUrl = () => {
+          const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL
+          
+          if (envUrl) {
+            return String(envUrl).replace(/\/+$/, '').replace(/\/api(?:\/v1)?$/, '')
+          }
+          
+          // For production deployed on Railway
+          if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            return 'https://dscwoc-production.up.railway.app'
+          }
+          
+          return 'http://localhost:5000'
+        }
+        const apiUrl = getApiUrl()
         console.log('Calling backend API:', apiUrl)
         
         // Get the intended role from localStorage (set during login)
