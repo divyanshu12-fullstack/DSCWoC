@@ -232,7 +232,7 @@ const Navbar = () => {
                 </button>
               ))}
 
-              {user ? (
+              {user && (
                 <div className="pt-3 border-t border-white/10">
                   <button
                     onClick={handleLogout}
@@ -241,13 +241,6 @@ const Navbar = () => {
                     LOGOUT
                   </button>
                 </div>
-              ) : (
-                <button
-                  onClick={handleDashboardClick}
-                  className="w-full retro-button border-2 border-cosmic-purple text-white hover:bg-cosmic-purple/15 px-6 py-2.5 rounded-full font-semibold mt-3 cosmic-glow"
-                >
-                  DASHBOARD
-                </button>
               )}
             </div>
           </div>

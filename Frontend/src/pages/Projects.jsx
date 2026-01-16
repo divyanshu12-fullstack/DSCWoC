@@ -17,84 +17,88 @@ const ProjectCard = ({ project, onClick }) => {
   return (
     <div
       onClick={() => onClick(project)}
-      className="group cursor-pointer rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6 
+      className="group cursor-pointer rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4 sm:p-6
                  hover:border-cyan-400/50 hover:bg-white/10 transition-all duration-300
                  hover:shadow-lg hover:shadow-cyan-500/10"
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold text-white group-hover:text-cyan-300 transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 sm:mb-4 gap-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base sm:text-lg font-semibold text-white group-hover:text-cyan-300 transition-colors truncate">
             {project.name}
           </h3>
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-gray-400 text-xs sm:text-sm mt-1 truncate">
             {project.github_owner}/{project.github_repo}
           </p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${difficultyColors[project.difficulty]}`}>
+        <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap flex-shrink-0 ${difficultyColors[project.difficulty]}`}>
           {project.difficulty}
         </span>
       </div>
 
       {/* Description */}
-      <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+      <p className="text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
         {project.description || 'No description available'}
       </p>
 
       {/* Tech Stack */}
       {project.tech_stack?.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {project.tech_stack.slice(0, 4).map((tech, idx) => (
-            <span key={idx} className="px-2 py-1 bg-white/10 rounded text-xs text-gray-300">
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
+          {project.tech_stack.slice(0, 3).map((tech, idx) => (
+            <span key={idx} className="px-2 py-0.5 sm:py-1 bg-white/10 rounded text-xs text-gray-300">
               {tech}
             </span>
           ))}
-          {project.tech_stack.length > 4 && (
-            <span className="px-2 py-1 bg-white/10 rounded text-xs text-gray-400">
-              +{project.tech_stack.length - 4}
+          {project.tech_stack.length > 3 && (
+            <span className="px-2 py-0.5 sm:py-1 bg-white/10 rounded text-xs text-gray-400">
+              +{project.tech_stack.length - 3}
             </span>
           )}
         </div>
       )}
 
       {/* Stats */}
-      <div className="flex items-center gap-4 text-sm text-gray-400 pt-4 border-t border-white/10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-400 pt-3 sm:pt-4 border-t border-white/10">
         <span className="flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
-          {project.stats?.stars || 0}
+          <span className="hidden sm:inline">{project.stats?.stars || 0}</span>
+          <span className="sm:hidden">{Math.floor((project.stats?.stars || 0) / 1000)}k</span>
         </span>
         <span className="flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
-          {project.stats?.forks || 0}
+          <span className="hidden sm:inline">{project.stats?.forks || 0}</span>
+          <span className="sm:hidden">{Math.floor((project.stats?.forks || 0) / 100)}c</span>
         </span>
         <span className="flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
           </svg>
-          {project.stats?.contributors || 0}
+          <span className="hidden sm:inline">{project.stats?.contributors || 0}</span>
+          <span className="sm:hidden">{Math.floor((project.stats?.contributors || 0) / 10)}</span>
         </span>
         <span className="flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" />
           </svg>
-          {project.stats?.mergedPRs || 0} PRs
+          <span className="hidden sm:inline">{project.stats?.mergedPRs || 0} PRs</span>
+          <span className="sm:hidden">{project.stats?.mergedPRs || 0}</span>
         </span>
       </div>
 
       {/* Mentor */}
       {project.mentor && (
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/10">
+        <div className="flex items-center gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/10 min-w-0">
           <img
             src={project.mentor.avatar_url || `https://github.com/${project.mentor.github_username}.png`}
             alt={project.mentor.github_username}
-            className="w-6 h-6 rounded-full"
+            className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0"
           />
-          <span className="text-sm text-gray-400">
-            Mentored by <span className="text-cyan-300">{project.mentor.fullName || project.mentor.github_username}</span>
+          <span className="text-xs sm:text-sm text-gray-400 truncate">
+            By <span className="text-cyan-300 truncate">{project.mentor.fullName || project.mentor.github_username}</span>
           </span>
         </div>
       )}
@@ -391,6 +395,7 @@ const Projects = () => {
   const [showAddModal, setShowAddModal] = useState(false)
   const [timeLeft, setTimeLeft] = useState({})
   const [isLocked, setIsLocked] = useState(false)
+  const [beginnerFriendly, setBeginnerFriendly] = useState(false)
   const [filters, setFilters] = useState({
     page: 1,
     limit: 12,
@@ -455,8 +460,14 @@ const Projects = () => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }))
   }
 
+  const toggleBeginnerFriendly = () => {
+    const newBeginnerFriendly = !beginnerFriendly
+    setBeginnerFriendly(newBeginnerFriendly)
+    handleFilterChange('difficulty', newBeginnerFriendly ? 'Beginner' : '')
+  }
+
   return (
-    <div className="min-h-screen relative bg-gradient-to-br from-[#05070f] via-[#0a0f1e] to-[#05070f]">
+    <div className="min-h-screen relative bg-gradient-to-br from-[#05070f] via-[#0a0f1e] to-[#05070f] overflow-hidden">
       <Starfield />
 
       <div className="relative z-10">
@@ -574,18 +585,17 @@ const Projects = () => {
               <option value="Advanced">Advanced</option>
             </select>
 
-            {/* Tech Stack Filter */}
-            <select
-              value={filters.tech}
-              onChange={(e) => handleFilterChange('tech', e.target.value)}
-              className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white 
-                         focus:outline-none focus:border-cyan-500"
+            {/* Beginner Friendly Toggle Button */}
+            <button
+              onClick={toggleBeginnerFriendly}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                beginnerFriendly
+                  ? 'bg-green-500/20 border border-green-500/50 text-green-300 hover:bg-green-500/30'
+                  : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
+              }`}
             >
-              <option value="">All Tech</option>
-              {availableTechStacks.map(tech => (
-                <option key={tech} value={tech}>{tech}</option>
-              ))}
-            </select>
+              {beginnerFriendly ? '✓ Beginner Friendly' : 'Beginner Friendly'}
+            </button>
           </div>
 
           {/* Projects Grid */}
@@ -608,7 +618,7 @@ const Projects = () => {
             </div>
           ) : (
             <>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {projects.map(project => (
                   <ProjectCard key={project._id} project={project} onClick={setSelectedProject} />
                 ))}

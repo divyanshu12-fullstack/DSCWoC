@@ -66,27 +66,6 @@ const Login = () => {
     }
   }
 
-  const handleAdminLogin = async () => {
-    try {
-      setLoginType('mentor')
-      setLoading(true)
-      setError('')
-      
-      // Clear any existing data before login
-      localStorage.removeItem('user')
-      localStorage.removeItem('access_token')
-      
-      await signInWithGitHub('mentor')
-      // The redirect will be handled by Supabase
-      
-    } catch (err) {
-      console.error('Login error:', err)
-      setError('Failed to sign in with GitHub. Please try again.')
-      setLoading(false)
-      setLoginType(null)
-    }
-  }
-
   // Show loading while checking authentication
   if (checkingAuth) {
     return (
@@ -147,28 +126,6 @@ const Login = () => {
                 </svg>
                 {loading && loginType === 'contributor' ? 'Signing in...' : 'Continue with GitHub'}
               </button>
-
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-600"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-transparent text-gray-400">or</span>
-                </div>
-              </div>
-
-              {/* Mentor Login */}
-              <button
-                onClick={handleAdminLogin}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-stellar-cyan to-nebula-blue hover:from-stellar-cyan/80 hover:to-nebula-blue/80 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                {loading && loginType === 'mentor' ? 'Signing in...' : 'Mentor Login'}
-              </button>
             </div>
 
             {/* Info Text */}
@@ -176,16 +133,6 @@ const Login = () => {
               <p className="text-gray-400 text-sm">
                 New to DSC WoC? Your account will be created automatically when you sign in.
               </p>
-            </div>
-
-            {/* Role Info */}
-            <div className="mt-6 p-4 bg-stellar-cyan/10 border border-stellar-cyan/20 rounded-lg">
-              <h3 className="text-stellar-cyan font-medium mb-2">Login Information:</h3>
-              <ul className="text-gray-300 text-sm space-y-1">
-                <li>• <strong>Contributors:</strong> Use "Continue with GitHub"</li>
-                <li>• <strong>Mentors:</strong> Use "Mentor Login"</li>
-                <li>• <strong>Admins:</strong> Access via <a href="/admin" className="text-stellar-cyan hover:underline">/admin</a> route</li>
-              </ul>
             </div>
           </div>
 
