@@ -172,7 +172,7 @@ const Navbar = () => {
 
         {/* Desktop User Section */}
         <div className="hidden md:flex items-center space-x-4">
-          {user ? (
+          {user && (
             <div className="flex items-center space-x-3">
               <img
                 src={user.avatar_url}
@@ -187,13 +187,6 @@ const Navbar = () => {
                 DASHBOARD
               </button>
             </div>
-          ) : (
-            <button
-              onClick={handleJoinMission}
-              className="retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink hover:from-galaxy-violet hover:to-nebula-pink text-white px-6 py-2 rounded-full font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-cosmic-purple/50 hover:-translate-y-0.5"
-            >
-              Sign IN
-            </button>
           )}
         </div>
       </div>
@@ -216,7 +209,7 @@ const Navbar = () => {
                 </button>
               ))}
 
-              {user ? (
+              {user && (
                 <div className="pt-3 border-t border-white/10">
                   <div className="flex items-center space-x-3 mb-3">
                     <img
@@ -233,13 +226,6 @@ const Navbar = () => {
                     DASHBOARD
                   </button>
                 </div>
-              ) : (
-                <button
-                  onClick={handleJoinMission}
-                  className="w-full retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink text-white px-6 py-2.5 rounded-full font-semibold mt-3"
-                >
-                  SIGN IN
-                </button>
               )}
             </div>
           </div>

@@ -12,10 +12,13 @@ export const signInWithGitHub = async (role = "contributor") => {
   // Store the intended role in localStorage before redirect
   localStorage.setItem("intended_role", role);
 
+  // Use environment variable for site URL, fallback to window.location.origin
+  const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "github",
     options: {
-      redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
+      redirectTo: `${siteUrl}/auth/callback?role=${role}`,
       scopes: "read:user user:email",
     },
   });

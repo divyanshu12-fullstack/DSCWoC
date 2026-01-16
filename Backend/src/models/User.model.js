@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-    
+
     // Profile information
     fullName: {
       type: String,
@@ -54,7 +54,7 @@ const userSchema = new mongoose.Schema(
     // Role-based access control
     role: {
       type: String,
-      enum: ['Contributor', 'Mentor', 'Admin'],
+      enum: ['Contributor', 'ProjectAdmin', 'Mentor', 'Admin'],
       default: 'Contributor',
     },
 
@@ -69,7 +69,7 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
-    
+
     // Statistics
     stats: {
       totalPRs: {
@@ -99,13 +99,15 @@ const userSchema = new mongoose.Schema(
         default: 0,
       },
     },
-    
+
     // Badges earned
-    badges: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Badge',
-    }],
-    
+    badges: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Badge',
+      },
+    ],
+
     // Account status
     isActive: {
       type: Boolean,
@@ -139,7 +141,7 @@ userSchema.virtual('pullRequests', {
 });
 
 // Instance method to update user statistics
-userSchema.methods.updateStats = async function() {
+userSchema.methods.updateStats = async function () {
   const PullRequest = mongoose.model('PullRequest');
 
   const agg = await PullRequest.aggregate([
@@ -174,18 +176,18 @@ userSchema.methods.updateStats = async function() {
 };
 
 // Static method to update leaderboard ranks
-userSchema.statics.updateRanks = async function() {
+userSchema.statics.updateRanks = async function () {
   const users = await this.find({ isActive: true })
     .sort({ 'stats.points': -1, 'stats.totalPRs': -1 })
     .select('_id stats.points stats.totalPRs');
-  
+
   const bulkOps = users.map((user, index) => ({
     updateOne: {
       filter: { _id: user._id },
-      update: { 'stats.rank': index + 1 }
-    }
+      update: { 'stats.rank': index + 1 },
+    },
   }));
-  
+
   if (bulkOps.length > 0) {
     await this.bulkWrite(bulkOps);
   }
