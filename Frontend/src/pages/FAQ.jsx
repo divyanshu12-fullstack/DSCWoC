@@ -183,18 +183,12 @@ const FAQ = () => {
               <p className="text-gray-300 mb-6">
                 Our team is here to help you succeed in your open source journey.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex justify-center">
                 <button
                   onClick={() => navigate('/contact')}
                   className="bg-stellar-cyan hover:bg-stellar-cyan/80 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
                 >
                   Contact Support
-                </button>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-6 rounded-lg border border-white/20 transition-colors duration-200"
-                >
-                  Get Started
                 </button>
               </div>
             </div>

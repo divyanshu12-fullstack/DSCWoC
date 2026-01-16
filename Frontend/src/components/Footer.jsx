@@ -1,4 +1,5 @@
 import { Github, Linkedin, Mail, Instagram } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const quickLinkColumns = [
   ['Home', 'About', 'Timeline'],
@@ -6,6 +7,19 @@ const quickLinkColumns = [
 ];
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const handleQuickLinkClick = (item) => {
+    if (item === 'Projects') {
+      navigate('/projects');
+    } else {
+      const element = document.getElementById(item.toLowerCase());
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <footer className="relative py-12 px-6 border-t border-cosmic-purple/10">
       <div className="max-w-7xl mx-auto">
@@ -36,12 +50,12 @@ const Footer = () => {
                 <ul key={colIndex} className="space-y-2">
                   {column.map((item) => (
                     <li key={item}>
-                      <a
-                        href={`#${item.toLowerCase()}`}
-                        className="text-gray-400 hover:text-cosmic-purple transition-colors text-sm"
+                      <button
+                        onClick={() => handleQuickLinkClick(item)}
+                        className="text-gray-400 hover:text-cosmic-purple transition-colors text-sm cursor-pointer"
                       >
                         {item}
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>
