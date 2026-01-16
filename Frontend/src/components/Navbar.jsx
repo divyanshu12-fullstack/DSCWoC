@@ -238,7 +238,7 @@ const Navbar = () => {
                   onClick={handleJoinMission}
                   className="w-full retro-button bg-gradient-to-r from-cosmic-purple to-nebula-pink text-white px-6 py-2.5 rounded-full font-semibold mt-3"
                 >
-                  JOIN MISSION
+                  SIGN IN
                 </button>
               )}
             </div>
