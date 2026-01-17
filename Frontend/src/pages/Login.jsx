@@ -22,7 +22,11 @@ const Login = () => {
           const userData = JSON.parse(storedUser)
           // Verify the user data has required fields
           if (userData && userData.id && userData.github_username) {
-            navigate('/dashboard')
+            // Redirect based on user role
+            const redirectUrl = userData.role === 'Admin' ? '/admin' 
+              : userData.role === 'Mentor' ? '/mentor/dashboard' 
+              : '/dashboard'
+            navigate(redirectUrl)
             return
           } else {
             // Invalid user data, clear it
