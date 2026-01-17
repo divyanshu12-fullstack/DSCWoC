@@ -133,7 +133,10 @@ const AuthCallback = () => {
           }
           
           // Default redirect based on user role
-          const redirectUrl = result.data.redirectUrl || '/dashboard'
+          const defaultRedirect = result.data.user.role === 'Admin' ? '/admin'
+            : result.data.user.role === 'Mentor' ? '/mentor/dashboard'
+            : '/dashboard'
+          const redirectUrl = result.data.redirectUrl || defaultRedirect
           navigate(redirectUrl)
         } else {
           throw new Error(result.message || 'Authentication failed')
