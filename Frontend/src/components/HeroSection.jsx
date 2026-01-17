@@ -68,12 +68,7 @@ const HeroSection = () => {
                 >
                   JOIN THE MISSION
                 </button>
-                <button
-                  onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSdcSsjLNUcR0K--noBp3AhwmuEYRIRVfjRHIPTqZ68jHtI90g/viewform?usp=dialog', '_blank')}
-                  className="retro-button border-2 border-cosmic-purple text-cosmic-purple hover:bg-cosmic-purple/20 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cosmic-purple/30 w-full max-w-[320px] sm:w-auto sm:max-w-none"
-                >
-                  BECOME A MENTOR
-                </button>
+
               </>
             )}
             <button
