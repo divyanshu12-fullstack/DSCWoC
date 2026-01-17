@@ -13,7 +13,7 @@ const readStoredUser = () => {
 
 const getDashboardPathForUser = (user) => {
   if (!user) return '/login';
-  if (user.role === 'Admin') return '/admin';
+  if (user.role === 'Admin') return '/admin1';
   if (user.role === 'Mentor') return '/mentor/dashboard';
   return '/dashboard';
 };
