@@ -225,7 +225,7 @@ const Leaderboard = () => {
                                 <div className="ship-pill">Status • Locked</div>
                                 <p className="ship-subtitle">Leaderboard launch sequence engaged</p>
                                 <h2 className="ship-title">Launch in</h2>
-                                <p className="ship-meta">Goes live on 16 Jan, 9:00 PM IST</p>
+                                <p className="ship-meta">Goes live on 18 Jan, 9:00 PM IST</p>
                             </div>
 
                             <div className="ship-countdown">
