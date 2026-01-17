@@ -23,7 +23,7 @@ const Login = () => {
           // Verify the user data has required fields
           if (userData && userData.id && userData.github_username) {
             // Redirect based on user role
-            const redirectUrl = userData.role === 'Admin' ? '/admin' 
+            const redirectUrl = userData.role === 'Admin' ? '/admin1' 
               : userData.role === 'Mentor' ? '/mentor/dashboard' 
               : '/dashboard'
             navigate(redirectUrl)

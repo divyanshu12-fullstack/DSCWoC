@@ -103,11 +103,11 @@ const AuthCallback = () => {
               // User tried admin login but is not an admin
               setError(`Access Denied: You are logged in as "${result.data.user.role}". Only Administrators can access the admin panel.`)
               setLoading(false)
-              setTimeout(() => navigate('/admin'), 3000)
+              setTimeout(() => navigate('/admin1'), 3000)
               return
             }
             // Admin user - go to admin panel
-            navigate('/admin')
+            navigate('/admin1')
             return
           }
           
@@ -126,14 +126,14 @@ const AuthCallback = () => {
           if (intendedRole === 'contributor') {
             if (result.data.user.role === 'Mentor' || result.data.user.role === 'Admin') {
               // Mentor/Admin tried contributor login - that's fine, redirect to their dashboard
-              const redirectUrl = result.data.user.role === 'Admin' ? '/admin' : '/mentor/dashboard'
+              const redirectUrl = result.data.user.role === 'Admin' ? '/admin1' : '/mentor/dashboard'
               navigate(redirectUrl)
               return
             }
           }
           
           // Default redirect based on user role
-          const defaultRedirect = result.data.user.role === 'Admin' ? '/admin'
+          const defaultRedirect = result.data.user.role === 'Admin' ? '/admin1'
             : result.data.user.role === 'Mentor' ? '/mentor/dashboard'
             : '/dashboard'
           const redirectUrl = result.data.redirectUrl || defaultRedirect

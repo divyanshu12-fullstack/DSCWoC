@@ -23,7 +23,7 @@ const Navbar = () => {
     if (!user) return '/login';
     switch (user.role) {
       case 'Admin':
-        return '/admin';
+        return '/admin1';
       case 'Mentor':
         return '/mentor/dashboard';
       default:
